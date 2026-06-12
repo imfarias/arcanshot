@@ -1,0 +1,20 @@
+appId: com.fariasbrz.arcanshot
+productName: ArcanShot
+directories:
+  output: release
+  buildResources: resources
+files:
+  - out/**
+  - resources/icon.png
+asar: true
+win:
+  target:
+    - target: nsis
+      arch: [x64]
+  icon: resources/icon.png
+nsis:
+  oneClick: true
+  perMachine: false
+  artifactName: ArcanShot-Setup-${version}.exe
+  shortcutName: ArcanShot
+  deleteAppDataOnUninstall: false
