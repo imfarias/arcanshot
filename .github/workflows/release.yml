@@ -53,8 +53,10 @@ jobs:
           npm run gen:icon
           npx electron-vite build
           npx electron-builder --win --publish never
-          mkdir dist-upload
+          mkdir dist-upload update-meta
           cp "release/ArcanShot-Setup-${{ steps.version.outputs.version }}.exe" dist-upload/
+          # metadados do auto-update (o electron-updater lê o latest.yml da última Release)
+          cp release/latest.yml release/*.blockmap update-meta/
 
       # Assinatura via SignPath Foundation (grátis p/ open source). Fica inativa até
       # existirem a variável SIGNPATH_ORGANIZATION_ID e o secret SIGNPATH_API_TOKEN.
@@ -78,6 +80,14 @@ jobs:
           wait-for-completion: true
           output-artifact-directory: dist-upload
 
+      - name: Ajustar latest.yml ao instalador assinado
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        shell: bash
+        run: |
+          node scripts/update-latest-yml.mjs "dist-upload/ArcanShot-Setup-${{ steps.version.outputs.version }}.exe" update-meta/latest.yml
+          # o blockmap descreve o .exe sem assinatura; sem ele o app baixa o instalador inteiro
+          rm -f update-meta/*.blockmap
+
       - name: Copiar com nome fixo
         shell: bash
         # link estável: /releases/latest/download/ArcanShot-Setup.exe
@@ -89,7 +99,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release create "v${{ steps.version.outputs.version }}" \
-            dist-upload/*.exe \
+            dist-upload/*.exe update-meta/* \
             --target "${{ github.sha }}" \
             --title "ArcanShot v${{ steps.version.outputs.version }}" \
             --generate-notes

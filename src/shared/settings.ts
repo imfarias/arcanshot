@@ -20,7 +20,9 @@ export function defaultSettings(picturesDir: string): AppSettings {
     beautifyBackground: DEFAULT_BACKGROUND_ID,
     beautifyPadding: 6,
     beautifyRounded: true,
-    beautifyShadow: true
+    beautifyShadow: true,
+    updateCheckOnStartup: true,
+    updateAutoInstall: false
   }
 }
 

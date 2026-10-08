@@ -38,3 +38,18 @@ No editor: `Ctrl+C` copia, `Ctrl+S` salva, `Ctrl+Shift+S` salvar como, `Ctrl+Z`/
 desfaz/refaz, `Esc` cancela.
 
 Documentação de arquitetura e do pipeline de features: pasta [`specs/`](specs/).
+
+## Apoie o projeto
+
+O ArcanShot é gratuito e sem anúncios. Se ele te ajuda, considere uma doação via Pix, de qualquer valor:
+
+<img src="site/web/public/pix-qr.svg" alt="QR code Pix para doar ao ArcanShot" width="200" />
+
+Pix copia e cola:
+
+```
+00020126580014br.gov.bcb.pix01369f412e4b-b639-431e-a97a-847dee4789aa5204000053039865802BR5915VINICIUS FARIAS6006BRASIL62070503***6304AD63
+```
+
+Chave aleatória: `9f412e4b-b639-431e-a97a-847dee4789aa`. Também em [arcanshot.vfconsultoria.dev](https://arcanshot.vfconsultoria.dev/#apoie)
+e no menu da bandeja do app (**Apoiar o projeto**).

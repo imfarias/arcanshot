@@ -30,3 +30,18 @@ if (meta) {
     })
     .catch(() => {})
 }
+
+// Pix copia e cola
+const copyStatus = document.querySelector('[data-copy-status]')
+document.querySelectorAll('[data-copy]').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const input = document.querySelector(btn.getAttribute('data-copy'))
+    try {
+      await navigator.clipboard.writeText(input.value)
+      if (copyStatus) copyStatus.textContent = 'Código Pix copiado. Cole no app do seu banco.'
+    } catch {
+      input.select()
+      if (copyStatus) copyStatus.textContent = 'Selecione o código e copie com Ctrl+C.'
+    }
+  })
+})

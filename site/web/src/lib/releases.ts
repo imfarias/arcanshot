@@ -29,7 +29,7 @@ function notesFrom(body: string | null): string[] {
   return (body ?? '')
     .split('\n')
     .map((l) => l.trim())
-    .filter((l) => l.startsWith('* ') || l.startsWith('- '))
+    .filter((l) => (l.startsWith('* ') || l.startsWith('- ')) && !l.includes('made their first contribution'))
     .map((l) =>
       l
         .slice(2)

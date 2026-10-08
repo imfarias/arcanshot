@@ -22,6 +22,8 @@ export function settingsFactory(overrides: Partial<AppSettings> = {}): AppSettin
     beautifyPadding: faker.number.int({ min: 0, max: 20 }),
     beautifyRounded: faker.datatype.boolean(),
     beautifyShadow: faker.datatype.boolean(),
+    updateCheckOnStartup: faker.datatype.boolean(),
+    updateAutoInstall: faker.datatype.boolean(),
     ...overrides
   }
 }

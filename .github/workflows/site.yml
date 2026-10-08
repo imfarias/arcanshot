@@ -48,6 +48,7 @@ jobs:
           file: site/web/Dockerfile
           push: ${{ github.event_name != 'pull_request' }}
           secrets: github_token=${{ secrets.GITHUB_TOKEN }}
+          build-args: CACHE_BUST=${{ github.run_id }}
           tags: |
             ${{ env.IMAGE }}:${{ github.sha }}
             ${{ env.IMAGE }}:latest
