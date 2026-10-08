@@ -24,6 +24,9 @@ permissions:
 env:
   IMAGE: ghcr.io/imfarias/arcanshot-site
   DOMAIN: arcanshot.vfconsultoria.dev
+  # Tag única por execução: o rebuild pós-Release roda no MESMO commit; com a tag só do SHA o
+  # Deployment não mudava, o pod não era trocado e o site seguia com a lista de releases antiga.
+  TAG: ${{ github.sha }}-${{ github.run_id }}
 
 jobs:
   build:
@@ -50,7 +53,7 @@ jobs:
           secrets: github_token=${{ secrets.GITHUB_TOKEN }}
           build-args: CACHE_BUST=${{ github.run_id }}
           tags: |
-            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:${{ env.TAG }}
             ${{ env.IMAGE }}:latest
           cache-from: type=gha,scope=site
           cache-to: type=gha,mode=max,scope=site
@@ -73,7 +76,7 @@ jobs:
         run: |
           kubectl apply -f site/deploy/istio-system.yaml
           bash site/deploy/ensure-gateway-server.sh "$DOMAIN"
-          sed "s#${IMAGE}:latest#${IMAGE}:${GITHUB_SHA}#" site/deploy/k8s.yaml | kubectl apply -f -
+          sed "s#${IMAGE}:latest#${IMAGE}:${TAG}#" site/deploy/k8s.yaml | kubectl apply -f -
           kubectl -n arcanshot rollout status deployment/arcanshot-site --timeout=300s
       - name: Smoke test
         run: |

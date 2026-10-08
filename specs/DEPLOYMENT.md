@@ -123,7 +123,7 @@ lida no build), o vídeo de apresentação e o player interativo em Web Audio (`
 
 **Deploy automático** (`.github/workflows/site.yml`): push na master que altere `site/**`, depois de cada
 workflow **Release** concluído (atualiza "Novidades") ou manual (`workflow_dispatch`). Build da imagem no
-GHCR (`:sha` e `:latest`) → `kubectl apply` com o usuário `arcanshot-deployer` → rollout → smoke test.
+GHCR (`:<sha>-<run_id>`, única por execução, e `:latest`) → `kubectl apply` com o usuário `arcanshot-deployer` → rollout → smoke test.
 Em PR o workflow só faz o build (sem push/deploy).
 - Secret `KUBE_CONFIG`: `base64 -w0` do arquivo gerado por `site/deploy/make-kubeconfig.sh` na VPS.
 - Variável `SITE_DEPLOY_ENABLED=true` (desligar = só build).
