@@ -15,6 +15,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npm run build && playwright test",
     "gen:icon": "node scripts/gen-icon.mjs",
+    "gen:pix": "node scripts/gen-pix.mjs",
     "dist": "npm run gen:icon && electron-vite build && electron-builder --win",
     "promo:narrate": "node scripts/promo/narrate.mjs",
     "promo:render": "node scripts/promo/render.mjs"
@@ -37,6 +38,7 @@
     "eslint": "^9.0.0",
     "jest-axe": "^9.0.0",
     "jsdom": "^26.0.0",
+    "qrcode": "1.5.4",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "typescript": "^5.8.0",
@@ -45,6 +47,7 @@
     "vitest": "^3.0.0"
   },
   "dependencies": {
+    "electron-updater": "6.8.9",
     "pdf-lib": "^1.17.1"
   }
 }

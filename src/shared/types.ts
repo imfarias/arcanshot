@@ -32,6 +32,10 @@ export interface AppSettings {
   beautifyPadding: number
   beautifyRounded: boolean
   beautifyShadow: boolean
+  /** Ao iniciar (e a cada 24 h), confere as Releases do GitHub e avisa se há versão nova. */
+  updateCheckOnStartup: boolean
+  /** Baixa a versão nova em segundo plano e instala ao sair do app. */
+  updateAutoInstall: boolean
 }
 
 export interface DisplayInfo {

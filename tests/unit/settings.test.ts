@@ -101,6 +101,8 @@ describe('settings de embelezamento (CT-UN-40 a CT-UN-44)', () => {
     expect(merged.beautifyEnabled).toBe(false)
     expect(merged.beautifyBackground).toBe('graphite')
     expect(merged.beautifyPadding).toBe(6)
+    expect(merged.updateCheckOnStartup).toBe(true)
+    expect(merged.updateAutoInstall).toBe(false)
   })
 
   it('CT-UN-43: validateSettings rejeita margem inválida', () => {

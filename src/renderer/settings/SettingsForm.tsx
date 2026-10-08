@@ -267,6 +267,33 @@ export function SettingsForm(): ReactNode {
 
         <div className="field checkbox">
           <input
+            id="updateCheckOnStartup"
+            data-testid="settings-update-check"
+            type="checkbox"
+            checked={settings.updateCheckOnStartup}
+            onChange={(e) => update('updateCheckOnStartup', e.target.checked)}
+          />
+          <label htmlFor="updateCheckOnStartup">Verificar atualizações ao iniciar e avisar quando houver versão nova</label>
+        </div>
+
+        <div className="field checkbox">
+          <input
+            id="updateAutoInstall"
+            data-testid="settings-update-auto-install"
+            type="checkbox"
+            checked={settings.updateAutoInstall}
+            disabled={!settings.updateCheckOnStartup}
+            aria-describedby="updateAutoInstall-help"
+            onChange={(e) => update('updateAutoInstall', e.target.checked)}
+          />
+          <label htmlFor="updateAutoInstall">Baixar e instalar atualizações automaticamente</label>
+          <span id="updateAutoInstall-help" className="help">
+            A versão nova é baixada em segundo plano e instalada quando você sair do ArcanShot.
+          </span>
+        </div>
+
+        <div className="field checkbox">
+          <input
             id="copyOnSave"
             data-testid="settings-copy-on-save"
             type="checkbox"

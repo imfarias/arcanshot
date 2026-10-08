@@ -26,6 +26,7 @@ export default tseslint.config(
         OfflineAudioContext: 'readonly',
         AudioContext: 'readonly',
         location: 'readonly',
+        navigator: 'readonly',
         URLSearchParams: 'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',

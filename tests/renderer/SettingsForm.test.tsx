@@ -164,4 +164,25 @@ describe('SettingsForm', () => {
     const { container } = await renderForm()
     expect(await axe(container)).toHaveNoViolations()
   })
+  it('atualizações: instalar automaticamente depende de verificar ao iniciar e é salvo', async () => {
+    const base = settingsFactory({ updateCheckOnStartup: false, updateAutoInstall: false })
+    const api = mockApi({ getSettings: vi.fn().mockResolvedValue(base) })
+    await renderForm(api)
+    const user = userEvent.setup()
+    const check = screen.getByTestId('settings-update-check')
+    const auto = screen.getByTestId('settings-update-auto-install')
+    expect(check).not.toBeChecked()
+    expect(auto).toBeDisabled()
+
+    await user.click(check)
+    expect(auto).toBeEnabled()
+    await user.click(auto)
+    await user.click(screen.getByTestId('settings-save'))
+
+    await waitFor(() => {
+      expect(api.saveSettings).toHaveBeenCalledWith(
+        expect.objectContaining({ updateCheckOnStartup: true, updateAutoInstall: true })
+      )
+    })
+  })
 })

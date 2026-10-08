@@ -1,4 +1,4 @@
-import { BrowserWindow, Menu, Notification, Tray, app, globalShortcut, nativeImage } from 'electron'
+import { BrowserWindow, Menu, Notification, Tray, app, globalShortcut, nativeImage, shell } from 'electron'
 import { join } from 'node:path'
 import type { AppSettings, CaptureMode } from '@shared/types'
 import { SettingsStore } from './settingsStore'
@@ -7,6 +7,8 @@ import { CaptureSession } from './captureSession'
 import { registerIpcHandlers } from './ipc'
 import { setDisplayCacheStore, startCapture } from './overlay'
 import { openGalleryWindow } from './gallery'
+import { autoUpdater } from 'electron-updater'
+import { UpdateManager, type UpdateNotice } from './updateManager'
 
 if (process.env['ARCANSHOT_USER_DATA']) {
   app.setPath('userData', process.env['ARCANSHOT_USER_DATA'])
@@ -21,7 +23,12 @@ if (!gotLock) {
 
 let tray: Tray | null = null
 let settingsWindow: BrowserWindow | null = null
+const DONATE_URL = 'https://arcanshot.vfconsultoria.dev/#apoie'
+
 let store: SettingsStore
+let updates: UpdateManager | null = null
+// Notificações com clique precisam continuar referenciadas até serem usadas (senão o GC some com o handler)
+const liveNotices = new Set<Notification>()
 
 function iconPath(): string {
   // dev: resources/ na raiz; empacotado: resources/ dentro de app.asar (files do builder)
@@ -74,6 +81,19 @@ function openSettingsWindow(): void {
   }
 }
 
+function showUpdateNotice({ title, body, onClick }: UpdateNotice): void {
+  if (!Notification.isSupported()) return
+  const n = new Notification({ title, body })
+  liveNotices.add(n)
+  const release = () => liveNotices.delete(n)
+  n.on('click', () => {
+    release()
+    onClick?.()
+  })
+  n.on('close', release)
+  n.show()
+}
+
 function registerHotkeys(settings: AppSettings): void {
   globalShortcut.unregisterAll()
   const bindings: { accelerator: string; mode: CaptureMode; label: string }[] = [
@@ -106,6 +126,7 @@ function applySettings(settings: AppSettings): void {
   if (app.isPackaged) {
     app.setLoginItemSettings({ openAtLogin: settings.launchOnStartup })
   }
+  updates?.configure()
 }
 
 function createTray(): void {
@@ -118,6 +139,12 @@ function createTray(): void {
     { label: 'Capturar todos os monitores', click: () => triggerCapture('all') },
     { type: 'separator' },
     { label: 'Configurações…', click: () => openSettingsWindow() },
+    {
+      label: 'Verificar atualizações',
+      enabled: app.isPackaged,
+      click: () => void updates?.check(true)
+    },
+    { label: 'Apoiar o projeto (Pix)', click: () => void shell.openExternal(DONATE_URL) },
     { type: 'separator' },
     { label: 'Sair', click: () => app.quit() }
   ])
@@ -137,6 +164,17 @@ app.whenReady().then(() => {
     (items) => openGalleryWindow(items, store.load())
   )
   registerIpcHandlers({ store, applySettings, openSettingsWindow, session })
+  // Atualizações só no app instalado (em dev não há app-update.yml nem instalador)
+  if (app.isPackaged) {
+    updates = new UpdateManager({
+      updater: autoUpdater,
+      notify: showUpdateNotice,
+      getSettings: () => store.load(),
+      currentVersion: app.getVersion(),
+      log: (msg) => console.warn(msg)
+    })
+    updates.start()
+  }
   createTray()
   applySettings(store.load())
 

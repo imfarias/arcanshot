@@ -18,3 +18,9 @@ nsis:
   artifactName: ArcanShot-Setup-${version}.exe
   shortcutName: ArcanShot
   deleteAppDataOnUninstall: false
+# Auto-update (electron-updater): gera app-update.yml no app e latest.yml no build.
+# O upload para a Release é feito pelo workflow (electron-builder roda com --publish never).
+publish:
+  provider: github
+  owner: imfarias
+  repo: arcanshot

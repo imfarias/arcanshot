@@ -1,6 +1,10 @@
 ---
 import Base from '../layouts/Base.astro'
 import { DOWNLOAD_URL, RELEASES_URL, REPO, formatDate, getReleases } from '../lib/releases'
+import pix from '../data/pix.json'
+
+const GITHUB_MARK =
+  'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'
 
 const releases = await getReleases()
 const latest = releases[0]
@@ -47,6 +51,8 @@ const shortcuts = [
       <div class="nav-links">
         <a href="#recursos">Recursos</a>
         <a href="#novidades">Novidades</a>
+        <a href="#contribua">Contribua</a>
+        <a href="#apoie">Apoie</a>
         <a href={`https://github.com/${REPO}`} rel="noopener">GitHub</a>
       </div>
     </nav>
@@ -58,6 +64,10 @@ const shortcuts = [
           ⤓ Baixar para Windows
         </a>
         <button class="btn ghost" type="button" data-open-video>▶ Assistir apresentação</button>
+        <a class="btn ghost" href={`https://github.com/${REPO}`} rel="noopener">
+          <svg class="gh-mark" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d={GITHUB_MARK} /></svg>
+          Colaborar no GitHub
+        </a>
       </div>
       <p class="meta" data-release-meta>{releaseMeta}</p>
     </div>
@@ -121,6 +131,46 @@ const shortcuts = [
       <p><a href={RELEASES_URL} rel="noopener">Todas as versões →</a></p>
     </section>
 
+    <section id="contribua" class="wrap section">
+      <h2>Contribua</h2>
+      <p class="section-lead">O ArcanShot é feito em público. Ideias, relatos de bug e código são muito bem-vindos.</p>
+      <div class="grid">
+        <a class="card link-card" href={`https://github.com/${REPO}`} rel="noopener">
+          <span class="icon" aria-hidden="true">★</span>
+          <h3>Dê uma estrela</h3>
+          <p>Ajuda o projeto a ser encontrado por mais gente.</p>
+        </a>
+        <a class="card link-card" href={`https://github.com/${REPO}/issues/new`} rel="noopener">
+          <span class="icon" aria-hidden="true">!</span>
+          <h3>Reporte um problema ou ideia</h3>
+          <p>Abra uma issue com o que aconteceu ou o que você gostaria de ver.</p>
+        </a>
+        <a class="card link-card" href={`https://github.com/${REPO}/blob/master/CONTRIBUTING.md`} rel="noopener">
+          <span class="icon" aria-hidden="true">{'</>'}</span>
+          <h3>Envie código</h3>
+          <p>Veja como rodar o projeto e abrir um pull request.</p>
+        </a>
+      </div>
+    </section>
+
+    <section id="apoie" class="wrap section split">
+      <div>
+        <h2>Apoie o projeto</h2>
+        <p>O ArcanShot é gratuito e sem anúncios. Se ele facilita o seu dia, considere uma doação via Pix, de qualquer valor. Ela ajuda a manter o site, o desenvolvimento e, no futuro, a assinatura digital do instalador.</p>
+        <p class="muted">No app do seu banco: <strong>Pix → Ler QR code</strong>, ou <strong>Pix Copia e Cola</strong> com o código ao lado.</p>
+      </div>
+      <div class="card pix">
+        <img src="/pix-qr.svg" width="220" height="220" alt="QR code Pix para doar ao ArcanShot" />
+        <label for="pix-code">Pix copia e cola</label>
+        <div class="copy-row">
+          <input id="pix-code" type="text" readonly value={pix.payload} />
+          <button class="btn primary small" type="button" data-copy="#pix-code">Copiar</button>
+        </div>
+        <p class="muted small" aria-live="polite" data-copy-status></p>
+        <p class="muted small">Chave aleatória: <code>{pix.key}</code></p>
+      </div>
+    </section>
+
     <section class="wrap section faq">
       <h2>Perguntas frequentes</h2>
       <details>
@@ -137,7 +187,7 @@ const shortcuts = [
       </details>
       <details>
         <summary>Como atualizo?</summary>
-        <p>Baixe o instalador mais recente nesta página e execute: ele substitui a versão anterior e mantém suas configurações.</p>
+        <p>A partir da versão 0.3, o ArcanShot verifica sozinho ao iniciar e avisa quando sai uma versão nova. Clique no aviso para atualizar, ou ative a instalação automática em <strong>Configurações</strong>. Também dá para baixar o instalador nesta página: ele substitui a versão anterior e mantém suas configurações.</p>
       </details>
     </section>
   </main>
