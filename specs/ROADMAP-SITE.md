@@ -4,7 +4,7 @@
 ao download do instalador mais recente, sem custo de hospedagem.
 
 **Decisões de base**
-- **Hospedagem:** GitHub Pages, no mesmo repositório (pasta `site/`). Grátis, HTTPS, deploy por Actions.
+- **Hospedagem:** k3s da VPS (mesmo cluster do GSTarget/Redmine Tracker), namespace `arcanshot`, deploy por Actions.
 - **Stack:** Astro (estático, zero JS por padrão, ótimo SEO) + CSS próprio. Sem backend.
 - **Download:** link estável `https://github.com/imfarias/arcanshot/releases/latest/download/ArcanShot-Setup.exe`
   (o workflow de release já publica esse asset com nome fixo a cada merge na master).
@@ -18,7 +18,7 @@ ao download do instalador mais recente, sem custo de hospedagem.
 - [ ] Decidir domínio: `imfarias.github.io/arcanshot` (grátis) ou domínio próprio (`arcanshot.app`, ~R$ 60–100/ano)
 
 ## Fase 1 — MVP da landing (2–3 dias)
-- [ ] Scaffold Astro em `site/` com workflow `pages.yml` (deploy em push na master que altere `site/**`)
+- [x] Site em Astro (`site/web`) publicado em https://arcanshot.vfconsultoria.dev (k3s da VPS, namespace `arcanshot`), deploy pelo Actions (`site.yml`) — ver `specs/DEPLOYMENT.md` §18
 - [ ] Identidade visual: reaproveitar o roxo do ícone (`scripts/gen-icon.mjs`), logo em SVG, favicon
 - [ ] Seções da página:
   - Hero: título + subtítulo + botão **Baixar para Windows** + versão atual, sobre o **vídeo de fundo** (abaixo)

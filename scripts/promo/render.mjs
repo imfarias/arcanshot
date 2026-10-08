@@ -88,7 +88,10 @@ async function renderVideo({ name, captions, audio, from = 0, to, crf, posterAt 
   const inputs = ['-f', 'image2pipe', '-framerate', String(fps), '-c:v', 'mjpeg', '-i', '-']
   if (wavPath) inputs.push('-i', wavPath)
   const out = [
-    '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf), '-pix_fmt', 'yuv420p',
+    // quadros JPEG são full range (yuvj420p): converte p/ faixa de vídeo BT.709 — sem isso o VP9 não toca no Chrome
+    '-vf', 'scale=in_range=pc:out_range=tv:out_color_matrix=bt709,format=yuv420p',
+    '-color_range', 'tv', '-colorspace', 'bt709', '-color_primaries', 'bt709', '-color_trc', 'bt709',
+    '-c:v', 'libx264', '-preset', 'slow', '-crf', String(crf),
     '-movflags', '+faststart',
     ...(wavPath ? ['-c:a', 'aac', '-b:a', '192k', '-shortest'] : ['-an']),
     tmpMp4

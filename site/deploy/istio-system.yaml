@@ -1,0 +1,32 @@
+# Objetos do ArcanShot em istio-system (padrão do cluster: certificados e redirects ficam lá).
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: arcanshot-tls
+  namespace: istio-system
+spec:
+  dnsNames: ["arcanshot.vfconsultoria.dev"]
+  issuerRef: { kind: ClusterIssuer, name: letsencrypt-prod }
+  secretName: arcanshot-tls
+---
+# HTTP → HTTPS. Casa só os caminhos do site (não usa prefixo "/"), para não capturar
+# /.well-known/acme-challenge/ — o desafio HTTP-01 da renovação do certificado continua passando.
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: http-redirect-arcanshot
+  namespace: istio-system
+spec:
+  gateways: [vf-http-gateway]
+  hosts: ["arcanshot.vfconsultoria.dev"]
+  http:
+    - match:
+        - uri: { exact: / }
+        - uri: { prefix: /apresentacao }
+        - uri: { prefix: /media }
+        - uri: { prefix: /_astro }
+        - uri: { prefix: /favicon }
+        - uri: { prefix: /site.js }
+      redirect:
+        redirectCode: 301
+        scheme: https
