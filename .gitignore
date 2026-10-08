@@ -6,3 +6,7 @@ test-results/
 playwright-report/
 .idea/
 *.log
+
+# vídeo de apresentação: intermediários do render
+site/promo/dist/*.wav
+site/promo/dist/still-*.png

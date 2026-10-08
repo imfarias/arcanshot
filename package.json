@@ -15,7 +15,9 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "npm run build && playwright test",
     "gen:icon": "node scripts/gen-icon.mjs",
-    "dist": "npm run gen:icon && electron-vite build && electron-builder --win"
+    "dist": "npm run gen:icon && electron-vite build && electron-builder --win",
+    "promo:narrate": "node scripts/promo/narrate.mjs",
+    "promo:render": "node scripts/promo/render.mjs"
   },
   "devDependencies": {
     "@faker-js/faker": "^9.0.0",

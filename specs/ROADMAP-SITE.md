@@ -25,7 +25,9 @@ ao download do instalador mais recente, sem custo de hospedagem.
   - Recursos: área/tela/todos os monitores, ferramentas de anotação, desfoque, numeração, galeria, embelezar
   - Tabela de atalhos (mesma do README)
   - Rodapé: GitHub, licença, "feito por"
-- [ ] **Vídeo de fundo do hero** mostrando o app em uso:
+- [x] **Vídeo de apresentação** (motion + narração + música via Web Audio API) — ver
+      [`site/promo/`](../site/promo/README.md): vídeo completo + loop mudo p/ o hero + pôster
+- [ ] Gravação real do app (complementar ao motion) — **vídeo de fundo do hero** mostrando o app em uso:
   - Roteiro (~15–20 s, em loop): `PrintScreen` → seleção de área → seta + retângulo + texto →
     desfoque de um dado sensível → numeração passo a passo → embelezar → `Ctrl+C` → colar num chat
   - Gravação: OBS Studio a 60 fps numa tela limpa (wallpaper neutro, dados fictícios, escala 100%)

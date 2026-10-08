@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ArcanShot — Apresentação</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08061a;
+        --fg: #ede9fe;
+        --accent: #7c3aed;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+      }
+      .stage { position: relative; width: min(100vw - 32px, 177.78vh - 120px); }
+      canvas { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+      .controls { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+      button {
+        font: inherit; font-weight: 600; color: #fff; background: var(--accent);
+        border: 0; border-radius: 999px; padding: 10px 22px; cursor: pointer;
+      }
+      button.ghost { background: transparent; border: 1px solid #52525b; }
+      button:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+      .time { font-variant-numeric: tabular-nums; opacity: 0.7; }
+      body.render { display: block; }
+      body.render .stage { width: 1920px; }
+      body.render canvas { width: 1920px; border-radius: 0; }
+      body.render .controls { display: none; }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <canvas id="cv" width="1920" height="1080" aria-label="Vídeo de apresentação do ArcanShot"></canvas>
+      <div class="controls">
+        <button id="play" type="button">▶ Assistir com som</button>
+        <button id="cc" type="button" class="ghost" aria-pressed="true">Legendas: ligadas</button>
+        <span class="time" id="time">0:00</span>
+      </div>
+    </main>
+    <script type="module">
+      import { load, drawFrame, buildMix, renderAudio } from './promo.js'
+
+      const params = new URLSearchParams(location.search)
+      const cv = document.getElementById('cv')
+      const ctx = cv.getContext('2d')
+      const opts = { captions: params.get('captions') !== '0' }
+      const { tl, narration } = await load('.')
+      const fmt = (s) => `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`
+
+      // API usada por scripts/promo/render.mjs (export offline para MP4/WebM)
+      window.promo = {
+        duration: tl.total,
+        timeline: tl,
+        frame(t, mime = 'image/jpeg', q = 0.95) {
+          drawFrame(ctx, t, tl, opts)
+          return cv.toDataURL(mime, q).split(',')[1]
+        },
+        async audioBase64() {
+          const bytes = new Uint8Array(await renderAudio(tl, narration))
+          let bin = ''
+          for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000))
+          return btoa(bin)
+        }
+      }
+
+      if (params.has('render')) {
+        document.body.classList.add('render')
+      } else {
+        const poster = Number(params.get('t') ?? tl.byId.outro.start + 4.6)
+        drawFrame(ctx, poster, tl, opts)
+        let actx = null
+        let raf = 0
+        const play = document.getElementById('play')
+        const cc = document.getElementById('cc')
+        const time = document.getElementById('time')
+        cc.onclick = () => {
+          opts.captions = !opts.captions
+          cc.setAttribute('aria-pressed', String(opts.captions))
+          cc.textContent = `Legendas: ${opts.captions ? 'ligadas' : 'desligadas'}`
+        }
+        play.onclick = async () => {
+          if (actx) {
+            cancelAnimationFrame(raf)
+            await actx.close()
+            actx = null
+            play.textContent = '▶ Assistir com som'
+            return
+          }
+          actx = new AudioContext({ latencyHint: 'playback' })
+          const t0 = actx.currentTime + 0.15
+          buildMix(actx, tl, narration, t0)
+          play.textContent = '■ Parar'
+          const tick = () => {
+            if (!actx) return
+            const t = actx.currentTime - t0
+            drawFrame(ctx, Math.max(0, t), tl, opts)
+            time.textContent = `${fmt(Math.max(0, t))} / ${fmt(tl.total)}`
+            if (t < tl.total) raf = requestAnimationFrame(tick)
+            else play.onclick()
+          }
+          tick()
+        }
+      }
+      window.promoReady = true
+    </script>
+  </body>
+</html>

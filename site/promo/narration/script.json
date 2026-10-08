@@ -1,0 +1,46 @@
+{
+  "voice": "pt_BR-faber-medium",
+  "lengthScale": 1,
+  "lines": [
+    {
+      "id": "intro",
+      "caption": "Conheça o ArcanShot. Capture, anote e compartilhe a sua tela em segundos.",
+      "speak": "Conheça o Arcan Shót. Capture, anote e compartilhe a sua tela, em segundos."
+    },
+    {
+      "id": "select",
+      "caption": "Aperte o atalho de captura (Print Screen) e selecione exatamente a área que você precisa, com lupa de precisão.",
+      "speak": "Aperte o atalho de captura, e selecione exatamente a área que você precisa, com lupa de precisão."
+    },
+    {
+      "id": "annotate",
+      "caption": "Destaque o que importa com setas, retângulos, texto e marcador.",
+      "speak": "Destaque o que importa, com setas, retângulos, texto e marcador."
+    },
+    {
+      "id": "privacy",
+      "caption": "Desfoque dados sensíveis e numere cada passo do seu tutorial.",
+      "speak": "Desfoque dados sensíveis, e numere cada passo do seu tutorial."
+    },
+    {
+      "id": "beautify",
+      "caption": "Num instante, deixe a captura pronta para compartilhar, com fundo, sombra e cantos arredondados.",
+      "speak": "Num instante, deixe a captura pronta para compartilhar, com fundo, sombra e cantos arredondados."
+    },
+    {
+      "id": "multi",
+      "caption": "Funciona com vários monitores, e a galeria guarda tudo o que você capturou.",
+      "speak": "Funciona com vários monitores, e a galeria guarda tudo o que você capturou."
+    },
+    {
+      "id": "share",
+      "caption": "Copie para a área de transferência ou salve onde quiser. Tudo local: nada sai do seu computador.",
+      "speak": "Copie para a área de transferência, ou salve onde quiser. Tudo local: nada sai do seu computador."
+    },
+    {
+      "id": "outro",
+      "caption": "ArcanShot. Gratuito e de código aberto. Baixe agora.",
+      "speak": "Arcan Shót. Gratuito, e de código aberto. Baixe agora."
+    }
+  ]
+}
