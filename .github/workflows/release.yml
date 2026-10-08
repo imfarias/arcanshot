@@ -1,0 +1,95 @@
+name: Release
+
+# Todo merge/push na master gera uma release com o instalador.
+# Versão: calculada por scripts/next-version.mjs (Conventional Commits).
+# Para pular: inclua "[skip release]" na mensagem do commit de merge.
+on:
+  push:
+    branches: [master]
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: ${{ !contains(github.event.head_commit.message, '[skip release]') }}
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run typecheck
+      - run: npm test
+
+      - name: Calcular versão
+        id: version
+        shell: bash
+        run: node scripts/next-version.mjs
+
+      - name: Verificar se a tag já existe
+        shell: bash
+        run: |
+          if git rev-parse "v${{ steps.version.outputs.version }}" >/dev/null 2>&1; then
+            echo "::error::Tag v${{ steps.version.outputs.version }} já existe"
+            exit 1
+          fi
+
+      - name: Build do instalador
+        shell: bash
+        run: |
+          npm version "${{ steps.version.outputs.version }}" --no-git-tag-version --allow-same-version
+          npm run gen:icon
+          npx electron-vite build
+          npx electron-builder --win --publish never
+          mkdir dist-upload
+          cp "release/ArcanShot-Setup-${{ steps.version.outputs.version }}.exe" dist-upload/
+
+      # Assinatura via SignPath Foundation (grátis p/ open source). Fica inativa até
+      # existirem a variável SIGNPATH_ORGANIZATION_ID e o secret SIGNPATH_API_TOKEN.
+      - name: Upload do instalador sem assinatura
+        id: unsigned
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: unsigned-installer
+          path: dist-upload/
+
+      - name: Assinar com SignPath
+        if: ${{ vars.SIGNPATH_ORGANIZATION_ID != '' }}
+        uses: signpath/github-action-submit-signing-request@v1
+        with:
+          api-token: ${{ secrets.SIGNPATH_API_TOKEN }}
+          organization-id: ${{ vars.SIGNPATH_ORGANIZATION_ID }}
+          project-slug: ${{ vars.SIGNPATH_PROJECT_SLUG }}
+          signing-policy-slug: ${{ vars.SIGNPATH_POLICY_SLUG }}
+          github-artifact-id: ${{ steps.unsigned.outputs.artifact-id }}
+          wait-for-completion: true
+          output-artifact-directory: dist-upload
+
+      - name: Copiar com nome fixo
+        shell: bash
+        # link estável: /releases/latest/download/ArcanShot-Setup.exe
+        run: cp "dist-upload/ArcanShot-Setup-${{ steps.version.outputs.version }}.exe" dist-upload/ArcanShot-Setup.exe
+
+      - name: Publicar release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh release create "v${{ steps.version.outputs.version }}" \
+            dist-upload/*.exe \
+            --target "${{ github.sha }}" \
+            --title "ArcanShot v${{ steps.version.outputs.version }}" \
+            --generate-notes

@@ -1,5 +1,6 @@
 import type { AppSettings, FieldErrors } from './types'
 import { validatePattern } from './filenamePattern'
+import { DEFAULT_BACKGROUND_ID, validateBeautify } from './beautify'
 
 export function defaultSettings(picturesDir: string): AppSettings {
   return {
@@ -12,7 +13,14 @@ export function defaultSettings(picturesDir: string): AppSettings {
     hotkeyAll: 'Shift+PrintScreen',
     launchOnStartup: false,
     copyOnSave: true,
-    showNotifications: true
+    showNotifications: true,
+    sequenceTimeoutSec: 5,
+    // RN-22: desligado por padrão — quem já usa o app não vê mudança até optar.
+    beautifyEnabled: false,
+    beautifyBackground: DEFAULT_BACKGROUND_ID,
+    beautifyPadding: 6,
+    beautifyRounded: true,
+    beautifyShadow: true
   }
 }
 
@@ -71,5 +79,12 @@ export function validateSettings(partial: Partial<AppSettings>): FieldErrors {
     }
   }
 
-  return errors
+  if (partial.sequenceTimeoutSec !== undefined) {
+    const t = partial.sequenceTimeoutSec
+    if (!Number.isInteger(t) || t < 2 || t > 60) {
+      errors.sequenceTimeoutSec = 'Tempo deve ser um inteiro entre 2 e 60 segundos'
+    }
+  }
+
+  return { ...errors, ...validateBeautify(partial) }
 }

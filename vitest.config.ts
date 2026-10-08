@@ -9,7 +9,11 @@ export default defineConfig({
   },
   test: {
     globals: true,
-    include: ['tests/unit/**/*.test.ts', 'tests/main/**/*.test.ts', 'tests/renderer/**/*.test.tsx'],
+    include: [
+      'tests/unit/**/*.test.ts',
+      'tests/main/**/*.test.ts',
+      'tests/renderer/**/*.test.{ts,tsx}'
+    ],
     exclude: ['tests/e2e/**'],
     setupFiles: ['tests/setup.ts'],
     coverage: {

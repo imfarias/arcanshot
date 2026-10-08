@@ -188,4 +188,129 @@ body,
   padding: 2px 4px;
   outline: none;
   resize: both;
+  user-select: text;
+  -webkit-user-select: text;
+  pointer-events: auto;
+}
+
+/* ---------- Lupa (feature 0008) ---------- */
+.magnifier {
+  position: absolute;
+  z-index: 30;
+  background: rgba(17, 17, 17, 0.92);
+  border: 1px solid #52525b;
+  border-radius: 8px;
+  padding: 4px;
+  pointer-events: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.55);
+}
+
+.magnifier-canvas {
+  display: block;
+  border-radius: 4px;
+  image-rendering: pixelated;
+}
+
+.magnifier-info {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 4px 2px 0;
+  font: 11px 'Consolas', 'Segoe UI', monospace;
+  color: #e4e4e7;
+}
+
+/* ---------- Painel de embelezamento (feature 0008) ---------- */
+.beautify-panel {
+  position: absolute;
+  top: calc(100% + 8px);
+  left: 0;
+  z-index: 25;
+  width: 292px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: rgba(24, 24, 27, 0.97);
+  border: 1px solid #3f3f46;
+  border-radius: 10px;
+  padding: 12px;
+  color: #e4e4e7;
+  font: 13px 'Segoe UI', sans-serif;
+  box-shadow: 0 6px 28px rgba(0, 0, 0, 0.55);
+}
+
+.beautify-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 96px;
+  background: repeating-conic-gradient(#3f3f46 0% 25%, #27272a 0% 50%) 50% / 12px 12px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.beautify-preview img {
+  max-width: 100%;
+  max-height: 160px;
+  display: block;
+}
+
+.beautify-preview-empty {
+  font-size: 12px;
+  color: #a1a1aa;
+  padding: 8px;
+  text-align: center;
+}
+
+.beautify-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.beautify-row label {
+  cursor: pointer;
+}
+
+.beautify-value {
+  min-width: 34px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.beautify-fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.beautify-fieldset legend {
+  padding: 0 0 6px;
+  font-size: 12px;
+  color: #a1a1aa;
+}
+
+.beautify-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.beautify-swatch {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 2px solid transparent;
+  cursor: pointer;
+  padding: 0;
+}
+
+.beautify-swatch.active {
+  border-color: #60a5fa;
+}
+
+.beautify-swatch:focus-visible,
+.beautify-panel input:focus-visible {
+  outline: 2px solid #60a5fa;
+  outline-offset: 1px;
 }

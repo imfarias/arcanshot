@@ -26,9 +26,17 @@ function fakeMain(initial: AppSettings) {
     beginEdit: vi.fn(),
     cancelOverlay: vi.fn(),
     copyImage: vi.fn(),
+    copyColor: vi.fn(),
     saveImage: vi.fn(),
     saveImageAs: vi.fn(),
-    getVersion: vi.fn().mockResolvedValue('0.1.0')
+    getVersion: vi.fn().mockResolvedValue('0.1.0'),
+    galleryInit: vi.fn(),
+    gallerySaveAll: vi.fn(),
+    galleryExportPdf: vi.fn(),
+    galleryDragItems: vi.fn().mockReturnValue({ ok: true }),
+    galleryEditItem: vi.fn().mockResolvedValue({ ok: true }),
+    galleryClose: vi.fn(),
+    onGalleryRefresh: vi.fn().mockReturnValue(() => {})
   }
   return { getStored: () => stored }
 }
@@ -63,18 +71,19 @@ describe('Fluxo integrado do formulário de configurações', () => {
     const user = userEvent.setup()
     await screen.findByTestId('settings-form')
 
-    // provoca duplicidade real de atalhos (passa na validação local? não — então
-    // usamos o mesmo validador: o erro aparece sem chamar o main, e corrigimos)
+    // provoca duplicidade real de atalhos via HotkeyInput:
+    // clica no campo, pressiona PrintScreen (duplica hotkeyArea que também é PrintScreen)
     const hotkeyFull = screen.getByTestId('settings-hotkey-full')
-    await user.clear(hotkeyFull)
-    await user.type(hotkeyFull, 'PrintScreen') // duplica com hotkeyArea
+    await user.click(hotkeyFull)
+    await user.keyboard('{PrintScreen}')
     await user.click(screen.getByTestId('settings-save'))
 
     await screen.findByTestId('settings-error-hotkey-full')
     expect(getStored().hotkeyFull).not.toBe('PrintScreen')
 
-    await user.clear(hotkeyFull)
-    await user.type(hotkeyFull, 'Ctrl+Alt+P')
+    // corrige com Ctrl+Alt+P
+    await user.click(hotkeyFull)
+    await user.keyboard('{Control>}{Alt>}p{/Alt}{/Control}')
     await user.click(screen.getByTestId('settings-save'))
 
     await screen.findByTestId('settings-success')

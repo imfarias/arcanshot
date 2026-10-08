@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 import type { AppSettings, FieldErrors } from '@shared/types'
 import { validateSettings } from '@shared/settings'
 import { formatFilename } from '@shared/filenamePattern'
+import { HotkeyInput } from './HotkeyInput'
 
 type Status = 'loading' | 'ready' | 'saving' | 'saved' | 'error'
 
@@ -212,12 +213,11 @@ export function SettingsForm(): ReactNode {
 
         <div className="field">
           <label htmlFor="hotkeyArea">Capturar área</label>
-          <input
+          <HotkeyInput
             id="hotkeyArea"
             data-testid="settings-hotkey-area"
-            type="text"
             value={settings.hotkeyArea}
-            onChange={(e) => update('hotkeyArea', e.target.value)}
+            onChange={(v) => update('hotkeyArea', v)}
             aria-describedby={errors.hotkeyArea ? 'hotkeyArea-error' : undefined}
             aria-invalid={!!errors.hotkeyArea}
           />
@@ -226,12 +226,11 @@ export function SettingsForm(): ReactNode {
 
         <div className="field">
           <label htmlFor="hotkeyFull">Capturar tela atual</label>
-          <input
+          <HotkeyInput
             id="hotkeyFull"
             data-testid="settings-hotkey-full"
-            type="text"
             value={settings.hotkeyFull}
-            onChange={(e) => update('hotkeyFull', e.target.value)}
+            onChange={(v) => update('hotkeyFull', v)}
             aria-describedby={errors.hotkeyFull ? 'hotkeyFull-error' : undefined}
             aria-invalid={!!errors.hotkeyFull}
           />
@@ -240,12 +239,11 @@ export function SettingsForm(): ReactNode {
 
         <div className="field">
           <label htmlFor="hotkeyAll">Capturar todos os monitores</label>
-          <input
+          <HotkeyInput
             id="hotkeyAll"
             data-testid="settings-hotkey-all"
-            type="text"
             value={settings.hotkeyAll}
-            onChange={(e) => update('hotkeyAll', e.target.value)}
+            onChange={(v) => update('hotkeyAll', v)}
             aria-describedby={errors.hotkeyAll ? 'hotkeyAll-error' : undefined}
             aria-invalid={!!errors.hotkeyAll}
           />
@@ -287,6 +285,28 @@ export function SettingsForm(): ReactNode {
             onChange={(e) => update('showNotifications', e.target.checked)}
           />
           <label htmlFor="showNotifications">Exibir notificações</label>
+        </div>
+
+        <div className="field">
+          <label htmlFor="sequenceTimeoutSec">Tempo entre prints na sequência (segundos)</label>
+          <input
+            id="sequenceTimeoutSec"
+            data-testid="settings-sequenceTimeoutSec"
+            type="number"
+            min={2}
+            max={60}
+            value={settings.sequenceTimeoutSec}
+            onChange={(e) => update('sequenceTimeoutSec', Number(e.target.value))}
+            aria-describedby={
+              'sequenceTimeoutSec-help' +
+              (errors.sequenceTimeoutSec ? ' sequenceTimeoutSec-error' : '')
+            }
+            aria-invalid={!!errors.sequenceTimeoutSec}
+          />
+          <p className="help" id="sequenceTimeoutSec-help">
+            Após tirar um print, aguarda esse tempo antes de abrir a galeria com todos os prints da sessão.
+          </p>
+          {fieldError('sequenceTimeoutSec')}
         </div>
       </fieldset>
 

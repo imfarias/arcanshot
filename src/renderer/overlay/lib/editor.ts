@@ -1,4 +1,7 @@
-import type { Annotation, Rect } from '@shared/types'
+import type { BeautifyOptions } from '@shared/beautify'
+import { pickExportFormat } from '@shared/beautify'
+import { applyBeautify } from './beautify'
+import type { Annotation, Point, Rect } from '@shared/types'
 
 export interface EditorState {
   annotations: Annotation[]
@@ -68,6 +71,42 @@ function drawArrowHead(
   ctx.stroke()
 }
 
+/**
+ * RN-08: traço à mão livre suavizado. Ligar os pontos com retas produz cantos
+ * angulosos quando o mouse se move rápido; usar cada ponto como controle de uma
+ * curva quadrática até o ponto médio seguinte devolve uma linha contínua.
+ */
+export function drawFreehand(
+  ctx: CanvasRenderingContext2D,
+  points: Point[],
+  color: string,
+  strokeWidth: number
+): void {
+  if (points.length === 0) return
+  ctx.strokeStyle = color
+  ctx.lineWidth = strokeWidth
+  ctx.lineCap = 'round'
+  ctx.lineJoin = 'round'
+  ctx.beginPath()
+
+  if (points.length === 1) {
+    // Ponto isolado: um segmento de comprimento zero com lineCap redondo vira um ponto.
+    ctx.moveTo(points[0].x, points[0].y)
+    ctx.lineTo(points[0].x, points[0].y)
+    ctx.stroke()
+    return
+  }
+
+  ctx.moveTo(points[0].x, points[0].y)
+  for (let i = 1; i < points.length - 1; i++) {
+    const mid = { x: (points[i].x + points[i + 1].x) / 2, y: (points[i].y + points[i + 1].y) / 2 }
+    ctx.quadraticCurveTo(points[i].x, points[i].y, mid.x, mid.y)
+  }
+  const last = points[points.length - 1]
+  ctx.lineTo(last.x, last.y)
+  ctx.stroke()
+}
+
 /** RN6: pixelização com bloco proporcional, mínimo 8 px. */
 export function pixelateRegion(
   ctx: CanvasRenderingContext2D,
@@ -103,6 +142,13 @@ export function renderAnnotations(
     ctx.save()
     if (a.kind === 'blur') {
       pixelateRegion(ctx, baseImage, a.rect)
+    } else if (a.kind === 'redact') {
+      // RN-11: opaco de verdade. Diferente do desfoque, nada do conteúdo original
+      // permanece na imagem exportada — por isso `globalAlpha` não é tocado aqui.
+      ctx.fillStyle = a.color
+      ctx.fillRect(a.rect.x, a.rect.y, a.rect.width, a.rect.height)
+    } else if (a.kind === 'freehand') {
+      drawFreehand(ctx, a.points, a.color, a.strokeWidth)
     } else if (a.kind === 'shape') {
       ctx.strokeStyle = a.color
       ctx.lineWidth = a.strokeWidth
@@ -169,13 +215,19 @@ export function renderAnnotations(
   }
 }
 
-/** Recorta a seleção + anotações num canvas offscreen e exporta como dataURL (RN3). */
+/**
+ * Recorta a seleção + anotações num canvas offscreen e exporta como dataURL (RN3).
+ *
+ * `beautify` é opcional: omitido (ou desligado), o resultado é idêntico ao de antes
+ * da feature 0008 — é essa a garantia da RN-22.
+ */
 export function exportSelection(
   baseCanvas: HTMLCanvasElement,
   annotations: Annotation[],
   selection: Rect,
   format: 'png' | 'jpg',
-  jpgQuality: number
+  jpgQuality: number,
+  beautify?: BeautifyOptions
 ): string {
   const out = document.createElement('canvas')
   out.width = Math.max(1, Math.round(selection.width))
@@ -199,8 +251,12 @@ export function exportSelection(
     out.width,
     out.height
   )
-  if (format === 'jpg') {
-    return out.toDataURL('image/jpeg', jpgQuality / 100)
+
+  const final = beautify?.enabled ? applyBeautify(out, beautify) : out
+  const outFormat = beautify ? pickExportFormat(format, beautify) : format
+
+  if (outFormat === 'jpg') {
+    return final.toDataURL('image/jpeg', jpgQuality / 100)
   }
-  return out.toDataURL('image/png')
+  return final.toDataURL('image/png')
 }

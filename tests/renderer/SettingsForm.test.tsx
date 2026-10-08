@@ -24,9 +24,17 @@ function mockApi(overrides: Partial<ArcanshotApi> = {}): ArcanshotApi {
     beginEdit: vi.fn(),
     cancelOverlay: vi.fn(),
     copyImage: vi.fn(),
+    copyColor: vi.fn(),
     saveImage: vi.fn(),
     saveImageAs: vi.fn(),
     getVersion: vi.fn().mockResolvedValue('0.1.0'),
+    galleryInit: vi.fn(),
+    gallerySaveAll: vi.fn(),
+    galleryExportPdf: vi.fn(),
+    galleryDragItems: vi.fn().mockReturnValue({ ok: true }),
+    galleryEditItem: vi.fn().mockResolvedValue({ ok: true }),
+    galleryClose: vi.fn(),
+    onGalleryRefresh: vi.fn().mockReturnValue(() => {}),
     ...overrides
   }
   window.arcanshot = api

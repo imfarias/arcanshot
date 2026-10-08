@@ -2,8 +2,11 @@ import { BrowserWindow, Menu, Notification, Tray, app, globalShortcut, nativeIma
 import { join } from 'node:path'
 import type { AppSettings, CaptureMode } from '@shared/types'
 import { SettingsStore } from './settingsStore'
+import { DisplayCacheStore } from './displayCacheStore'
+import { CaptureSession } from './captureSession'
 import { registerIpcHandlers } from './ipc'
-import { startCapture } from './overlay'
+import { setDisplayCacheStore, startCapture } from './overlay'
+import { openGalleryWindow } from './gallery'
 
 if (process.env['ARCANSHOT_USER_DATA']) {
   app.setPath('userData', process.env['ARCANSHOT_USER_DATA'])
@@ -28,6 +31,11 @@ function iconPath(): string {
 }
 
 function triggerCapture(mode: CaptureMode): void {
+  // Não acionar captura enquanto a janela de configurações estiver em foco —
+  // permite que o HotkeyInput capture teclas como PrintScreen sem abrir o overlay.
+  const focused = BrowserWindow.getFocusedWindow()
+  if (focused && settingsWindow && focused === settingsWindow) return
+
   void startCapture(mode, store.load()).catch((err: unknown) => {
     if (Notification.isSupported()) {
       new Notification({
@@ -93,7 +101,11 @@ function registerHotkeys(settings: AppSettings): void {
 
 function applySettings(settings: AppSettings): void {
   registerHotkeys(settings)
-  app.setLoginItemSettings({ openAtLogin: settings.launchOnStartup })
+  // setLoginItemSettings só faz sentido no app empacotado — em dev registraria
+  // o binário do electron em node_modules como item de inicialização do Windows.
+  if (app.isPackaged) {
+    app.setLoginItemSettings({ openAtLogin: settings.launchOnStartup })
+  }
 }
 
 function createTray(): void {
@@ -119,7 +131,12 @@ app.on('second-instance', () => {
 
 app.whenReady().then(() => {
   store = new SettingsStore(app.getPath('userData'), app.getPath('pictures'))
-  registerIpcHandlers({ store, applySettings, openSettingsWindow })
+  setDisplayCacheStore(new DisplayCacheStore(app.getPath('userData')))
+  const session = new CaptureSession(
+    () => store.load().sequenceTimeoutSec * 1000,
+    (items) => openGalleryWindow(items, store.load())
+  )
+  registerIpcHandlers({ store, applySettings, openSettingsWindow, session })
   createTray()
   applySettings(store.load())
 

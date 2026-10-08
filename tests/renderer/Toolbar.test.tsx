@@ -22,6 +22,10 @@ function makeProps(overrides: Partial<ToolbarProps> = {}): ToolbarProps {
     onSave: vi.fn(),
     onSaveAs: vi.fn(),
     onCancel: vi.fn(),
+    showBeautify: false,
+    beautifyOpen: false,
+    beautifyEnabled: false,
+    onToggleBeautify: vi.fn(),
     ...overrides
   }
 }
@@ -89,6 +93,86 @@ describe('Toolbar', () => {
 
   it('CT-FC-12: sem violações de acessibilidade (axe)', async () => {
     const { container } = render(<Toolbar {...makeProps()} />)
+    expect(await axe(container)).toHaveNoViolations()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Feature 0008 — ferramentas novas e botão de embelezar
+// ---------------------------------------------------------------------------
+
+describe('Toolbar — feature 0008 (CT-TB-10 a CT-TB-16)', () => {
+  const NOVAS = [
+    { id: 'pencil', label: 'Traço livre' },
+    { id: 'redact', label: 'Tarja sólida' },
+    { id: 'eyedropper', label: 'Conta-gotas' }
+  ]
+
+  it('CT-TB-10: as 3 ferramentas novas são renderizadas com aria-label', () => {
+    render(<Toolbar {...makeProps()} />)
+    for (const { id, label } of NOVAS) {
+      const btn = screen.getByTestId(`editor-tool-${id}`)
+      expect(btn).toBeInTheDocument()
+      expect(btn).toHaveAttribute('aria-label', label)
+    }
+  })
+
+  it('CT-TB-11: clicar em cada ferramenta nova emite onToolChange com o id certo', async () => {
+    const user = userEvent.setup()
+    for (const { id } of NOVAS) {
+      const props = makeProps()
+      const { unmount } = render(<Toolbar {...props} />)
+      await user.click(screen.getByTestId(`editor-tool-${id}`))
+      expect(props.onToolChange).toHaveBeenCalledWith(id)
+      unmount()
+    }
+  })
+
+  it('CT-TB-12: a ferramenta ativa recebe aria-pressed="true"', () => {
+    render(<Toolbar {...makeProps({ tool: 'pencil' })} />)
+    expect(screen.getByTestId('editor-tool-pencil')).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByTestId('editor-tool-redact')).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('CT-TB-13: o botão de embelezar emite onToggleBeautify', async () => {
+    const user = userEvent.setup()
+    const props = makeProps({ showBeautify: true })
+    render(<Toolbar {...props} />)
+
+    await user.click(screen.getByTestId('editor-beautify-toggle'))
+
+    expect(props.onToggleBeautify).toHaveBeenCalledTimes(1)
+  })
+
+  it('CT-TB-14: o botão de embelezar não é renderizado quando não é oferecido (RN-21)', () => {
+    render(<Toolbar {...makeProps({ showBeautify: false })} />)
+    expect(screen.queryByTestId('editor-beautify-toggle')).not.toBeInTheDocument()
+  })
+
+  it('o botão de embelezar reflete o estado aberto em aria-pressed', () => {
+    const { rerender } = render(<Toolbar {...makeProps({ showBeautify: true, beautifyOpen: false })} />)
+    expect(screen.getByTestId('editor-beautify-toggle')).toHaveAttribute('aria-pressed', 'false')
+
+    rerender(<Toolbar {...makeProps({ showBeautify: true, beautifyOpen: true })} />)
+    expect(screen.getByTestId('editor-beautify-toggle')).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('CT-TB-15: navegação por setas alcança os controles novos', async () => {
+    const user = userEvent.setup()
+    render(<Toolbar {...makeProps({ showBeautify: true })} />)
+
+    const first = screen.getByTestId('editor-tool-select')
+    first.focus()
+    // percorre a toolbar inteira: com roving tabindex o foco circula
+    for (let i = 0; i < 12; i++) {
+      await user.keyboard('{ArrowRight}')
+    }
+    expect(document.activeElement).not.toBe(first)
+    expect(document.activeElement?.tagName).toBe('BUTTON')
+  })
+
+  it('CT-TB-16: sem violações de acessibilidade após as adições', async () => {
+    const { container } = render(<Toolbar {...makeProps({ showBeautify: true })} />)
     expect(await axe(container)).toHaveNoViolations()
   })
 })

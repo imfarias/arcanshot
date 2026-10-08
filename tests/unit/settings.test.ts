@@ -63,3 +63,62 @@ describe('validateSettings (CT-UN-06)', () => {
     expect(validateSettings({ copyOnSave: false })).toEqual({})
   })
 })
+
+// ---------------------------------------------------------------------------
+// Feature 0008 — campos de embelezamento
+// ---------------------------------------------------------------------------
+
+describe('settings de embelezamento (CT-UN-40 a CT-UN-44)', () => {
+  it('CT-UN-40: nasce desligado para não mudar o comportamento de quem já usa (RN-22)', () => {
+    expect(defaultSettings('C:\\Pictures').beautifyEnabled).toBe(false)
+  })
+
+  it('CT-UN-41: traz os 5 campos com os defaults previstos', () => {
+    const d = defaultSettings('C:\\Pictures')
+    expect(d.beautifyBackground).toBe('graphite')
+    expect(d.beautifyPadding).toBe(6)
+    expect(d.beautifyRounded).toBe(true)
+    expect(d.beautifyShadow).toBe(true)
+  })
+
+  it('CT-UN-42: settings.json antigo (sem os campos) recebe os defaults no merge', () => {
+    const base = defaultSettings('C:\\Pictures')
+    const legacy = {
+      saveDir: 'D:\\Prints',
+      filenamePattern: 'Captura_%Y',
+      imageFormat: 'png',
+      jpgQuality: 90,
+      hotkeyArea: 'PrintScreen',
+      hotkeyFull: 'Ctrl+PrintScreen',
+      hotkeyAll: 'Shift+PrintScreen',
+      launchOnStartup: false,
+      copyOnSave: true,
+      showNotifications: true,
+      sequenceTimeoutSec: 5
+    }
+    const merged = mergeSettings(base, legacy)
+    expect(merged.saveDir).toBe('D:\\Prints')
+    expect(merged.beautifyEnabled).toBe(false)
+    expect(merged.beautifyBackground).toBe('graphite')
+    expect(merged.beautifyPadding).toBe(6)
+  })
+
+  it('CT-UN-43: validateSettings rejeita margem inválida', () => {
+    expect(validateSettings({ beautifyPadding: 99 }).beautifyPadding).toBeTruthy()
+    expect(validateSettings({ beautifyPadding: 3.5 }).beautifyPadding).toBeTruthy()
+  })
+
+  it('CT-UN-44: validateSettings rejeita fundo desconhecido', () => {
+    expect(validateSettings({ beautifyBackground: 'inexistente' }).beautifyBackground).toBeTruthy()
+  })
+
+  it('aceita um parcial válido de embelezamento', () => {
+    expect(validateSettings({ beautifyBackground: 'ocean', beautifyPadding: 10 })).toEqual({})
+  })
+
+  it('erros de embelezamento convivem com erros dos campos antigos', () => {
+    const errors = validateSettings({ saveDir: '  ', beautifyPadding: 50 })
+    expect(errors.saveDir).toBeTruthy()
+    expect(errors.beautifyPadding).toBeTruthy()
+  })
+})

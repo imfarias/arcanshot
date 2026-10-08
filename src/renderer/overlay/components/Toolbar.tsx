@@ -12,10 +12,13 @@ const TOOLS: { id: ToolId; label: string; icon: string }[] = [
   { id: 'ellipse', label: 'Elipse', icon: '◯' },
   { id: 'arrow', label: 'Seta', icon: '➜' },
   { id: 'line', label: 'Linha', icon: '╱' },
+  { id: 'pencil', label: 'Traço livre', icon: '✎' },
   { id: 'highlight', label: 'Marcador', icon: '🖍' },
   { id: 'blur', label: 'Desfoque', icon: '▒' },
+  { id: 'redact', label: 'Tarja sólida', icon: '█' },
   { id: 'text', label: 'Texto', icon: 'T' },
-  { id: 'step', label: 'Numeração passo-a-passo', icon: '①' }
+  { id: 'step', label: 'Numeração passo-a-passo', icon: '①' },
+  { id: 'eyedropper', label: 'Conta-gotas', icon: '◉' }
 ]
 
 const STROKES: { key: StrokeKey; label: string; size: number }[] = [
@@ -39,6 +42,11 @@ export interface ToolbarProps {
   onSave: () => void
   onSaveAs: () => void
   onCancel: () => void
+  /** RN-21: ausente no modo de re-edição da galeria. */
+  showBeautify?: boolean
+  beautifyOpen?: boolean
+  beautifyEnabled?: boolean
+  onToggleBeautify?: () => void
 }
 
 export function Toolbar(props: ToolbarProps): ReactNode {
@@ -160,6 +168,19 @@ export function Toolbar(props: ToolbarProps): ReactNode {
       <div className="toolbar-sep" />
 
       <div className="toolbar-group">
+        {props.showBeautify && (
+          <button
+            type="button"
+            className={`action-btn ${props.beautifyEnabled ? 'active' : ''}`}
+            aria-label="Embelezar para compartilhar"
+            aria-pressed={props.beautifyOpen ?? false}
+            title="Embelezar para compartilhar"
+            data-testid="editor-beautify-toggle"
+            onClick={props.onToggleBeautify}
+          >
+            ✨
+          </button>
+        )}
         <button
           type="button"
           className="action-btn"

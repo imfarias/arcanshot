@@ -1,17 +1,18 @@
 # Arquitetura — ArcanShot
 
 ## 1. Visão Geral
-ArcanShot é um aplicativo desktop Windows de captura de tela no estilo Flameshot/Lightshot: o usuário aciona a captura por atalho global ou ícone na bandeja, seleciona uma área (ou tela inteira / todos os monitores), anota sobre a imagem (retângulo, elipse, seta, linha, texto, marcador, desfoque, numeração passo-a-passo), e copia para o clipboard ou salva em pasta configurável. Uso pessoal/single-user, distribuído como instalador `.exe`.
+ArcanShot é um aplicativo desktop Windows de captura de tela no estilo Flameshot/Lightshot: o usuário aciona a captura por atalho global ou ícone na bandeja, seleciona uma área — livremente, podendo atravessar monitores — (ou tela inteira / todos os monitores), anota sobre a imagem (retângulo, elipse, seta, linha, texto, marcador, desfoque, traço livre, tarja sólida, numeração passo-a-passo), mira pixels com lupa e conta-gotas, e copia para o clipboard ou salva em pasta configurável. Uso pessoal/single-user, distribuído como instalador `.exe`.
 
 ## 2. Stack Tecnológica
 | Camada | Tecnologia | Versão | Justificativa |
 |---|---|---|---|
-| Runtime desktop | Electron | ^38 | APIs nativas maduras: desktopCapturer, clipboard, globalShortcut, Tray, screen |
-| Main process ("backend") | TypeScript + Node | 5.8 / 22 | Lógica de captura, persistência, IPC |
-| Renderer ("frontend") | React + TypeScript | ^19 | Overlay de edição (canvas) e tela de configurações |
+| Runtime desktop | Electron | ^38 | APIs nativas maduras: desktopCapturer, clipboard, globalShortcut, Tray, screen, startDrag |
+| Main process ("backend") | TypeScript + Node | 5.8 / 22 | Lógica de captura, persistência, IPC, sessão, geração de PDF |
+| Renderer ("frontend") | React + TypeScript | ^19 | Overlay de edição (canvas), tela de configurações e galeria de sequência |
 | Build | electron-vite | ^3 | Bundling main/preload/renderer unificado, HMR |
 | Persistência | JSON em userData | — | Single-user local; banco seria overkill |
 | Empacotamento | electron-builder | ^26 | Instalador NSIS .exe com um comando |
+| PDF | pdf-lib | ^1.x | Geração de PDF pure-JS a partir de dataUrls de capturas |
 | Testes (main/unit) | Vitest | ^3 | Rápido, nativo a Vite/TS |
 | Testes (FE componente) | Vitest + Testing Library + jest-axe | ^3/^16/^9 | Componente + a11y automatizada |
 | Testes (E2E) | Playwright (`_electron`) | ^1.5x | Único framework E2E com driver Electron oficial |
@@ -30,22 +31,28 @@ arcanshot/
 │   │   ├── types.ts             # AppSettings, Annotation, IPC payloads
 │   │   ├── settings.ts          # defaults, validação, merge
 │   │   ├── filenamePattern.ts   # tokens %Y%m%d etc., sanitização
-│   │   └── geometry.ts          # normalização de retângulos, conversão DIP↔px
+│   │   ├── geometry.ts          # normalização de retângulos, conversão DIP↔px
+│   │   └── beautify.ts          # presets de fundo + cálculo do acabamento (puro)
 │   ├── main/                    # processo principal ("backend")
 │   │   ├── index.ts             # lifecycle, tray, atalhos globais, single-instance
 │   │   ├── settingsStore.ts     # persistência JSON (recebe baseDir — testável)
+│   │   ├── displayCacheStore.ts # cache JSON de DisplayInfo[] (best-effort)
 │   │   ├── capture.ts           # desktopCapturer multi-display
-│   │   ├── overlay.ts           # janelas overlay por display / editor
+│   │   ├── overlay.ts           # overlay: janela única (união dos displays) / editor
+│   │   ├── gallery.ts           # janela de galeria de sequência + temp files de DnD
+│   │   ├── captureSession.ts    # buffer + timer de detecção de sequência
 │   │   ├── saveImage.ts         # nome por padrão + colisão + escrita (testável)
 │   │   └── ipc.ts               # ipcMain.handle de todos os canais
 │   ├── preload/index.ts         # contextBridge → window.arcanshot
 │   └── renderer/
 │       ├── overlay/             # captura: seleção + editor canvas
 │       │   ├── index.html / main.tsx / Overlay.tsx
-│       │   ├── components/      # Toolbar, ColorPicker, TextInputLayer
-│       │   └── lib/editor.ts    # estado de anotações, render, undo/redo, export
-│       └── settings/            # tela de configurações
-│           ├── index.html / main.tsx / SettingsForm.tsx
+│       │   ├── components/      # Toolbar, TextInputLayer, Magnifier, BeautifyPanel
+│       │   └── lib/             # editor.ts (anotações/render/export) + beautify.ts (canvas)
+│       ├── settings/            # tela de configurações
+│       │   ├── index.html / main.tsx / SettingsForm.tsx
+│       └── gallery/             # galeria de sequência de capturas
+│           ├── index.html / main.tsx / Gallery.tsx / gallery.css
 ├── tests/
 │   ├── main/                    # integração main process (fs real em tmp)
 │   ├── unit/                    # shared/ puros
@@ -60,7 +67,7 @@ Monolito desktop em camadas: **shared (puro) → main (orquestração nativa) �
 
 ## 5. Comunicação
 - Renderer ↔ Main: IPC via `ipcRenderer.invoke` / `ipcMain.handle` (request/response assíncrono).
-- Canais nomeados `dominio:acao`: `settings:get|save|pick-dir`, `capture:start`, `overlay:init|begin-edit|cancel`, `editor:copy|save|save-as`, `app:open-settings`.
+- Canais nomeados `dominio:acao`: `settings:get|save|pick-dir`, `capture:start`, `overlay:init|begin-edit|cancel`, `editor:copy|copy-color|save|save-as`, `gallery:init|save-all|export-pdf|drag-item|close`, `app:open-settings`.
 - Payload: JSON camelCase, tipado em `shared/types.ts`.
 - Respostas de mutação: `{ ok: true, ...dados } | { ok: false, error: string, fieldErrors? }`.
 
@@ -123,10 +130,14 @@ N/A. Persistência: `settings.json` em `app.getPath('userData')`, escrito atomic
 | 1 | Electron | Tauri (Rust) | Instalador ~80 MB vs ~10 MB; em troca, APIs de captura/clipboard/tray nativas e maturidade | 2026-06-12 |
 | 2 | Captura congelada por display + overlay | Overlay transparente sobre tela viva | Imagem estática (não captura vídeo em movimento); em troca, seleção precisa e UI fora do print | 2026-06-12 |
 | 3 | JSON em userData | electron-store, SQLite | Sem migrations automáticas; em troca, zero dependência e trivial de testar | 2026-06-12 |
-| 4 | Seleção de área limitada a 1 display por vez | Seleção cruzando monitores | Modo "todas as telas" cobre o caso multi-monitor inteiro; seleção cross-display fica p/ v2 | 2026-06-12 |
+| 4 | ~~Seleção de área limitada a 1 display por vez~~ **(SUPERADA pela #8 em 2026-08-26)** | Seleção cruzando monitores | Modo "todas as telas" cobria o caso multi-monitor inteiro; seleção cross-display ficou p/ v2 | 2026-06-12 |
 | 5 | Anotações vetoriais re-renderizadas (não rasterizadas no ato) | Desenho direto no canvas | Mais código de render; em troca, undo/redo e edição não-destrutiva | 2026-06-12 |
+| 6 | pdf-lib (pure JS) para geração de PDF | Chromium print API, wkhtmltopdf | Pure JS sem binário nativo → empacota sem problemas no NSIS; API simples para embedPng/embedJpg | 2026-06-13 |
+| 7 | Temp files pré-escritos para drag-and-drop | Escrever on-demand na drag | startDrag precisa de path síncrono; pré-escrita na abertura da galeria garante disponibilidade imediata | 2026-06-13 |
+| 8 | **Overlay único abrangendo a união de todos os displays no modo `area`** (substitui a #4) | (a) N janelas + sincronização da seleção por IPC; (b) manter limite de 1 display | Um canvas do tamanho da união consome mais memória (2× 4K ≈ 66 MB por canvas) e regiões sem monitor ficam pretas; em troca, o arrasto cross-display é nativo do próprio gesto do mouse — sem IPC no caminho crítico do `pointermove`, sem estado de seleção distribuído entre janelas, e uma janela a menos para criar/mostrar por captura | 2026-08-26 |
+| 9 | **Embelezamento aplicado na exportação, nunca no canvas de trabalho** | (a) compor o acabamento no canvas do overlay; (b) janela separada de compartilhamento | O usuário não vê o acabamento em tamanho real, só numa miniatura de preview; em troca, a seleção continua sendo o recorte puro, o overlay segue 1:1 com o desktop (essencial após a decisão #8) e desligar o embelezamento devolve exatamente o comportamento anterior | 2026-08-26 |
 
 ## 15. Não-funcionais alvo
 - Performance: overlay visível em < 600 ms após o atalho em monitor 4K; edição fluida (render < 16 ms por frame para até 200 anotações).
 - Disponibilidade: app residente em tray; single-instance lock (segunda execução foca a existente).
-- Escalabilidade: N/A (local). Suporte a 1–4 monitores com DPI distintos.
+- Escalabilidade: N/A (local). Suporte a 1–4 monitores com DPI distintos. No modo `area`, o overlay compõe um canvas do tamanho da união dos displays na maior escala presente — dimensionar memória para esse pior caso.

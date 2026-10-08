@@ -14,6 +14,14 @@
 - [2026-06-12] [Arquiteto] Lógica de negócio (padrão de nome de arquivo, validação de settings, geometria) vive em módulos puros em `src/shared/` — Motivo: testável sem Electron, reutilizável entre main e renderer.
 - [2026-06-12] [Arquiteto] Persistência de settings em JSON simples com merge de defaults e tolerância a arquivo corrompido — Motivo: um único usuário local; banco seria overkill.
 
+## Decisões Arquiteturais
+- [2026-06-13] [Líder] Cache de displays em `display-cache.json` separado de `settings.json` — Motivo: settings é config do usuário; cache é estado auto-gerenciado; misturar exigiria refatorar `mergeSettings` para preservar chaves extras.
+- [2026-06-13] [Dev] Injeção de `DisplayCacheStore` em `overlay.ts` via `setDisplayCacheStore()` (módulo-level) — Motivo: preserva assinatura pública de `startCapture(mode, settings)` usada em dois call-sites sem alterar `IpcContext`.
+- [2026-08-26] [Arquiteto] Modo `area` usa **uma janela overlay na união de todos os displays** (decisão #8 do ARCHITECTURE.md, supera a #4) — Motivo: um gesto de mouse pertence a uma única `BrowserWindow`; N janelas travam a seleção na borda do monitor. Alternativa descartada: sincronizar a seleção entre janelas por IPC (colocaria IPC em cada frame de `pointermove`).
+- [2026-08-26] [Arquiteto] Embelezamento aplicado **na exportação**, nunca no canvas de trabalho (decisão #9) — Motivo: preserva o 1:1 entre overlay e desktop que a decisão #8 tornou essencial, e desligar o acabamento devolve exatamente o comportamento anterior.
+- [2026-08-26] [Dev] Novos campos de `AppSettings` devem ser **planos**, não objetos aninhados — Motivo: `mergeSettings` compara `typeof value === typeof base[key]` e `FieldErrors` é `Partial<Record<keyof AppSettings, string>>`; aninhar exigiria merge profundo e erros aninhados. Campo novo ausente em `settings.json` antigo é preenchido pelo default automaticamente — sem migração.
+- [2026-08-26] [Dev] Lógica de geometria de janelas extraída para `src/main/overlayLayout.ts`, **puro, sem `import 'electron'`** — Motivo: `overlay.ts`, `capture.ts`, `ipc.ts` e `index.ts` são excluídos da cobertura por dependerem de Electron; extrair a regra deu 100% de cobertura sem mockar `BrowserWindow`. Vale como padrão para qualquer regra nova que hoje moraria nesses arquivos.
+
 ## Padrões Estabelecidos
 - [2026-06-12] [Arquiteto] IPC sempre via `ipcRenderer.invoke`/`ipcMain.handle` com canal nomeado `dominio:acao` (ex.: `settings:save`, `editor:copy`). Preload expõe API tipada `window.arcanshot` via contextBridge; `contextIsolation: true`, `sandbox: true`, `nodeIntegration: false`.
 - [2026-06-12] [Arquiteto] Testes "backend integração" = módulos do main process testados com **fs real em diretório temporário**, sem mock de services internos.
@@ -27,6 +35,13 @@
 
 ## Pontos de Atenção
 - [2026-06-12] [Arquiteto] Multi-monitor com `scaleFactor` distinto (DPI): sempre converter entre coordenadas DIP (Electron `display.bounds`) e pixels físicos (imagem capturada) usando `scaleFactor` do display.
+- [2026-08-26] [Líder] Numa janela que **cruza monitores de DPI diferentes**, `CSS px == DIP` é FALSO: a janela adota o `devicePixelRatio` de um monitor só. Derive sempre o fator do valor medido (`window.innerWidth / larguraDaUniao`), nunca de `devicePixelRatio`.
+- [2026-08-26] [Líder] Ler pixels de canvas grande é caro: `getImageData` num canvas do tamanho da união de monitores força readback de GPU. Para conta-gotas/lupa, ler do **canvas pequeno já ampliado** — mesmo pixel, custo constante. Nunca usar `willReadFrequently` no canvas principal: força rasterização por software em todo frame.
+- [2026-08-26] [Dev] Efeito colateral **nunca** dentro da função atualizadora de `useState`: o React pode executá-la mais de uma vez (StrictMode), duplicando a escrita. Calcular o próximo valor fora, chamar `setState(next)` e só então agendar o efeito.
+- [2026-08-26] [Dev] Callback de `setTimeout` roda fora do ciclo do React — exceção ali vira erro não tratado, sem error boundary. Envolver em `try/catch` + `Promise.resolve(...)` quando a chamada puder não devolver Promise.
+- [2026-08-26] [Tester] jsdom não implementa `toDataURL`: sem stub, a exportação devolve vazio e as ações de copiar/salvar silenciosamente não disparam. Stub que codifica as dimensões no dataUrl (`data:image/png;w=240;h=240`) deixa o tamanho final verificável no teste.
+- [2026-08-26] [Tester] Atribuir `.value` num input controlado do React não dispara `onChange` (o React rastreia o valor internamente) — usar `fireEvent.change(el, { target: { value } })`.
+- [2026-08-26] [Tester] jsdom não implementa canvas 2D, decodificação de `Image` nem `PointerEvent`. Para testar componentes de canvas: stubar `HTMLCanvasElement.prototype.getContext` **registrando as chamadas** (permite asserção sobre o que foi desenhado), substituir `Image` por uma classe que dispara `onload` em `queueMicrotask`, e aliasar `window.PointerEvent = window.MouseEvent` (senão `fireEvent.pointerDown` perde `clientX`/`clientY`). Ver `tests/renderer/Overlay.test.tsx`.
 - [2026-06-12] [Arquiteto] `globalShortcut.register` pode falhar se outro app já usa a tecla (ex.: PrintScreen com OneDrive) — sempre tratar retorno `false` e informar o usuário.
 
 ## Glossário do Domínio

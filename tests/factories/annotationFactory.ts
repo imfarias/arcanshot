@@ -5,9 +5,20 @@ type ShapeAnnotation = Extract<Annotation, { kind: 'shape' }>
 type TextAnnotation = Extract<Annotation, { kind: 'text' }>
 type StepAnnotation = Extract<Annotation, { kind: 'step' }>
 type BlurAnnotation = Extract<Annotation, { kind: 'blur' }>
+type RedactAnnotation = Extract<Annotation, { kind: 'redact' }>
+type FreehandAnnotation = Extract<Annotation, { kind: 'freehand' }>
 
 function point(): { x: number; y: number } {
   return { x: faker.number.int({ min: 0, max: 1920 }), y: faker.number.int({ min: 0, max: 1080 }) }
+}
+
+function rect(): { x: number; y: number; width: number; height: number } {
+  return {
+    x: faker.number.int({ min: 0, max: 800 }),
+    y: faker.number.int({ min: 0, max: 600 }),
+    width: faker.number.int({ min: 20, max: 400 }),
+    height: faker.number.int({ min: 20, max: 300 })
+  }
 }
 
 export const annotationFactory = {
@@ -48,12 +59,29 @@ export const annotationFactory = {
   blur(overrides: Partial<BlurAnnotation> = {}): BlurAnnotation {
     return {
       kind: 'blur',
-      rect: {
-        x: faker.number.int({ min: 0, max: 800 }),
-        y: faker.number.int({ min: 0, max: 600 }),
-        width: faker.number.int({ min: 20, max: 400 }),
-        height: faker.number.int({ min: 20, max: 300 })
-      },
+      rect: rect(),
+      ...overrides
+    }
+  },
+
+  /** Tarja sólida (feature 0008) — cor escura por padrão, como no uso real. */
+  redact(overrides: Partial<RedactAnnotation> = {}): RedactAnnotation {
+    return {
+      kind: 'redact',
+      rect: rect(),
+      color: '#111111',
+      ...overrides
+    }
+  },
+
+  /** Traço à mão livre (feature 0008) — sequência plausível de pontos. */
+  freehand(overrides: Partial<FreehandAnnotation> = {}): FreehandAnnotation {
+    const count = faker.number.int({ min: 3, max: 12 })
+    return {
+      kind: 'freehand',
+      points: Array.from({ length: count }, () => point()),
+      color: faker.color.rgb(),
+      strokeWidth: faker.number.int({ min: 2, max: 8 }),
       ...overrides
     }
   }
