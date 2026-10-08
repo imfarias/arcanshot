@@ -1,0 +1,89 @@
+name: Site
+
+# Publica https://arcanshot.vfconsultoria.dev (namespace arcanshot no k3s da VPS).
+# Roda quando o site muda na master e depois de cada release (a lista de novidades é gerada no build).
+on:
+  push:
+    branches: [master]
+    paths: ['site/**', 'resources/icon.png', '.dockerignore', '.github/workflows/site.yml']
+  pull_request:
+    branches: [master]
+    paths: ['site/**', 'resources/icon.png', '.dockerignore', '.github/workflows/site.yml']
+  workflow_run:
+    workflows: [Release]
+    types: [completed]
+  workflow_dispatch:
+
+concurrency:
+  group: site-${{ github.event_name == 'pull_request' && github.ref || 'deploy' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+env:
+  IMAGE: ghcr.io/imfarias/arcanshot-site
+  DOMAIN: arcanshot.vfconsultoria.dev
+
+jobs:
+  build:
+    name: Build da imagem
+    if: github.event_name != 'workflow_run' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-buildx-action@v3
+      - uses: docker/login-action@v3
+        if: github.event_name != 'pull_request'
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: site/web/Dockerfile
+          push: ${{ github.event_name != 'pull_request' }}
+          secrets: github_token=${{ secrets.GITHUB_TOKEN }}
+          tags: |
+            ${{ env.IMAGE }}:${{ github.sha }}
+            ${{ env.IMAGE }}:latest
+          cache-from: type=gha,scope=site
+          cache-to: type=gha,mode=max,scope=site
+
+  deploy:
+    name: Deploy no k3s (namespace arcanshot)
+    needs: build
+    if: github.event_name != 'pull_request' && vars.SITE_DEPLOY_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    environment: site
+    steps:
+      - uses: actions/checkout@v4
+      - uses: azure/setup-kubectl@v4
+      - name: Kubeconfig
+        run: |
+          mkdir -p ~/.kube
+          echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > ~/.kube/config
+          chmod 600 ~/.kube/config
+      - name: Aplicar manifests
+        run: |
+          kubectl apply -f site/deploy/istio-system.yaml
+          bash site/deploy/ensure-gateway-server.sh "$DOMAIN"
+          sed "s#${IMAGE}:latest#${IMAGE}:${GITHUB_SHA}#" site/deploy/k8s.yaml | kubectl apply -f -
+          kubectl -n arcanshot rollout status deployment/arcanshot-site --timeout=300s
+      - name: Smoke test
+        run: |
+          for i in $(seq 1 20); do
+            if curl -fsS "https://${DOMAIN}/healthz" && curl -fsS -o /dev/null "https://${DOMAIN}/"; then echo; exit 0; fi
+            sleep 6
+          done
+          echo "Site não respondeu"; exit 1
+      - name: Diagnóstico (em caso de falha)
+        if: failure()
+        run: |
+          kubectl -n arcanshot get pods -o wide || true
+          kubectl -n arcanshot describe deployment/arcanshot-site || true
+          kubectl -n arcanshot logs deployment/arcanshot-site --tail=100 || true

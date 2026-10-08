@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ArcanShot — Apresentação</title>
+    <style>
+      :root {
+        color-scheme: dark;
+        --bg: #08061a;
+        --fg: #ede9fe;
+        --accent: #7c3aed;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        background: var(--bg);
+        color: var(--fg);
+        font-family: 'Segoe UI', system-ui, sans-serif;
+      }
+      .stage { position: relative; width: min(100vw - 32px, 177.78vh - 120px); }
+      canvas { display: block; width: 100%; aspect-ratio: 16 / 9; border-radius: 14px; background: #000; }
+      .controls { display: flex; gap: 12px; align-items: center; margin-top: 14px; flex-wrap: wrap; }
+      button {
+        font: inherit; font-weight: 600; color: #fff; background: var(--accent);
+        border: 0; border-radius: 999px; padding: 10px 22px; cursor: pointer;
+      }
+      button.ghost { background: transparent; border: 1px solid #52525b; }
+      button:focus-visible { outline: 2px solid #c4b5fd; outline-offset: 2px; }
+      .time { font-variant-numeric: tabular-nums; opacity: 0.7; }
+      body.render { display: block; }
+      body.render .stage { width: 1920px; }
+      body.render canvas { width: 1920px; border-radius: 0; }
+      body.render .controls { display: none; }
+    </style>
+  </head>
+  <body>
+    <main class="stage">
+      <canvas id="cv" width="1920" height="1080" aria-label="Vídeo de apresentação do ArcanShot"></canvas>
+      <div class="controls">
+        <button id="play" type="button">▶ Assistir com som</button>
+        <button id="cc" type="button" class="ghost" aria-pressed="true">Legendas: ligadas</button>
+        <span class="time" id="time">0:00</span>
+      </div>
+    </main>
+    <script type="module" src="./player.js"></script>
+  </body>
+</html>

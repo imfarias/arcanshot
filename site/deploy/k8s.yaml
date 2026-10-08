@@ -1,0 +1,56 @@
+# Site arcanshot.vfconsultoria.dev — padrão do cluster: vf-shared-gateway + cert-manager (letsencrypt-prod).
+# Imagem: ghcr.io/imfarias/arcanshot-site (o workflow .github/workflows/site.yml troca a tag a cada deploy).
+# Recursos em istio-system (certificado e redirect HTTP): site/deploy/istio-system.yaml
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: arcanshot
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: arcanshot-site
+  namespace: arcanshot
+  labels: { app: arcanshot-site }
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels: { app: arcanshot-site }
+  template:
+    metadata:
+      labels: { app: arcanshot-site }
+    spec:
+      imagePullSecrets: [{ name: ghcr-pull }]
+      securityContext: { runAsNonRoot: true }
+      containers:
+        - name: site
+          image: ghcr.io/imfarias/arcanshot-site:latest
+          ports: [{ containerPort: 8080 }]
+          readinessProbe: { httpGet: { path: /healthz, port: 8080 } }
+          livenessProbe: { httpGet: { path: /healthz, port: 8080 }, periodSeconds: 30 }
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 200m, memory: 64Mi }
+          securityContext: { allowPrivilegeEscalation: false }
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: arcanshot-site
+  namespace: arcanshot
+spec:
+  selector: { app: arcanshot-site }
+  ports: [{ name: http, port: 80, targetPort: 8080 }]
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: arcanshot-site
+  namespace: arcanshot
+spec:
+  hosts: ["arcanshot.vfconsultoria.dev"]
+  gateways: ["istio-system/vf-shared-gateway"]
+  http:
+    - route:
+        - destination: { host: arcanshot-site.arcanshot.svc.cluster.local, port: { number: 80 } }

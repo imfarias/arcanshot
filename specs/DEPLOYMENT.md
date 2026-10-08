@@ -103,3 +103,36 @@ Nenhum dado pessoal coletado ou transmitido. Capturas ficam exclusivamente na m�
 - [ ] Atalhos globais conferidos com OneDrive/Game Bar ativos
 - [ ] Changelog escrito na Release
 - [ ] README com instruções de instalação e aviso do SmartScreen
+
+## 18. Site `arcanshot.vfconsultoria.dev` — **publicado em 2026-10-08**
+Landing page em Astro (`site/web`) com o download da última release, a lista de novidades (GitHub Releases,
+lida no build), o vídeo de apresentação e o player interativo em Web Audio (`/apresentacao/`).
+
+**Onde está:** VPS `srv916232` (31.97.248.137), k3s de 1 nó com Istio, mesmo cluster do GSTarget, Redmine Tracker e ArcanClips.
+
+| Recurso | Onde | Detalhe |
+|---|---|---|
+| Deployment + Service `arcanshot-site` | namespace `arcanshot` | nginx-unprivileged :8080, sonda em `/healthz`, imagem `ghcr.io/imfarias/arcanshot-site` |
+| `VirtualService arcanshot-site` | namespace `arcanshot` | gateway `istio-system/vf-shared-gateway` |
+| `Certificate arcanshot-tls` | `istio-system` | ClusterIssuer `letsencrypt-prod`, HTTP-01 |
+| `VirtualService http-redirect-arcanshot` | `istio-system` | 301 → https em `vf-http-gateway` (sem prefixo `/`, p/ não capturar o ACME) |
+| Servidor `https-arcanshot` | `vf-shared-gateway` | backup antes da mudança: `/root/vf-shared-gateway.backup-20261008222420.yaml` |
+| Secret `ghcr-pull` | namespace `arcanshot` | cópia do usado pelo GSTarget |
+| ServiceAccount `arcanshot-deployer` | namespace `arcanshot` | RBAC mínimo (`site/deploy/deployer-rbac.yaml`) — sem delete, sem secrets, sem outros namespaces |
+| DNS | Hostinger | CNAME `arcanshot` → `vfconsultoria.dev` |
+
+**Deploy automático** (`.github/workflows/site.yml`): push na master que altere `site/**`, depois de cada
+workflow **Release** concluído (atualiza "Novidades") ou manual (`workflow_dispatch`). Build da imagem no
+GHCR (`:sha` e `:latest`) → `kubectl apply` com o usuário `arcanshot-deployer` → rollout → smoke test.
+Em PR o workflow só faz o build (sem push/deploy).
+- Secret `KUBE_CONFIG`: `base64 -w0` do arquivo gerado por `site/deploy/make-kubeconfig.sh` na VPS.
+- Variável `SITE_DEPLOY_ENABLED=true` (desligar = só build).
+- Revogar: `kubectl -n arcanshot delete secret arcanshot-deployer-token` e reaplicar `deployer-rbac.yaml`.
+
+**Deploy manual de emergência** (da raiz do repo; chave `~/.ssh/vardle_vps`): enviar `site/`, `resources/icon.png`
+e `.dockerignore` para a VPS, `docker build -f site/web/Dockerfile -t ghcr.io/imfarias/arcanshot-site:manual .`,
+`docker save … | k3s ctr images import -` e `kubectl -n arcanshot set image deploy/arcanshot-site site=ghcr.io/imfarias/arcanshot-site:manual`.
+O primeiro deploy (2026-10-08) foi feito assim, com a tag `:bootstrap`.
+
+**Mídias:** os vídeos vêm de `site/promo/dist` (gerados por `npm run promo:render`); o build do site copia
+para `/media/`. Atualizar o vídeo = renderizar de novo, commitar e dar merge.

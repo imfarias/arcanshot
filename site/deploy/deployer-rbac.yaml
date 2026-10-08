@@ -1,0 +1,115 @@
+# Usuário de deploy do GitHub Actions com permissão mínima (o cluster é compartilhado com outros apps).
+# Aplicar uma vez (admin):  kubectl apply -f site/deploy/deployer-rbac.yaml
+# Gerar o kubeconfig:       bash site/deploy/make-kubeconfig.sh  (na VPS)
+#
+# Pode: o que os manifests do site usam no namespace arcanshot; em istio-system, só os objetos do
+# ArcanShot (certificado, redirect HTTP e o gateway compartilhado, onde fica a entrada https-arcanshot).
+# Não pode: excluir recursos, ler/alterar outros namespaces, criar namespaces, nada cluster-wide.
+# Limitação conhecida: o RBAC não restringe o patch a UMA entrada do vf-shared-gateway.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: arcanshot-deployer
+  namespace: arcanshot
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: arcanshot-deployer-token
+  namespace: arcanshot
+  annotations:
+    kubernetes.io/service-account.name: arcanshot-deployer
+type: kubernetes.io/service-account-token
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: arcanshot-deployer
+  namespace: arcanshot
+rules:
+  - apiGroups: [""]
+    resources: [services, configmaps]
+    verbs: [get, list, watch, create, update, patch]
+  - apiGroups: [""]
+    resources: [pods, pods/log, events]
+    verbs: [get, list, watch]
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [get, list, watch, create, update, patch]
+  - apiGroups: [apps]
+    resources: [replicasets]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.istio.io]
+    resources: [virtualservices]
+    verbs: [get, list, watch, create, update, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: arcanshot-deployer
+  namespace: arcanshot
+subjects:
+  - kind: ServiceAccount
+    name: arcanshot-deployer
+    namespace: arcanshot
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: arcanshot-deployer
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: arcanshot-deployer
+  namespace: istio-system
+rules:
+  - apiGroups: [cert-manager.io]
+    resources: [certificates]
+    resourceNames: [arcanshot-tls]
+    verbs: [get, update, patch]
+  - apiGroups: [networking.istio.io]
+    resources: [virtualservices]
+    resourceNames: [http-redirect-arcanshot]
+    verbs: [get, update, patch]
+  - apiGroups: [networking.istio.io]
+    resources: [gateways]
+    resourceNames: [vf-shared-gateway]
+    verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: arcanshot-deployer
+  namespace: istio-system
+subjects:
+  - kind: ServiceAccount
+    name: arcanshot-deployer
+    namespace: arcanshot
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: arcanshot-deployer
+---
+# O pipeline faz "kubectl apply" do namespace: só leitura/patch do próprio arcanshot.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: arcanshot-deployer-namespace
+rules:
+  - apiGroups: [""]
+    resources: [namespaces]
+    resourceNames: [arcanshot]
+    verbs: [get, patch]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: arcanshot-deployer-namespace
+subjects:
+  - kind: ServiceAccount
+    name: arcanshot-deployer
+    namespace: arcanshot
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: arcanshot-deployer-namespace

@@ -6,3 +6,15 @@ test-results/
 playwright-report/
 .idea/
 *.log
+
+# vídeo de apresentação: intermediários do render
+site/promo/dist/*.wav
+site/promo/dist/still-*.png
+
+# site (Astro)
+site/web/node_modules/
+site/web/dist/
+site/web/.astro/
+site/web/public/media/
+site/web/public/apresentacao/
+site/web/public/favicon.png
