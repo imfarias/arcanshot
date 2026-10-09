@@ -1,11 +1,11 @@
 ---
 import Base from '../layouts/Base.astro'
+import Icon from '../components/Icon.astro'
+import Selection from '../components/Selection.astro'
 import { DOWNLOAD_URL, RELEASES_URL, REPO, formatDate, getReleases } from '../lib/releases'
 import pix from '../data/pix.json'
 
-const GITHUB_MARK =
-  'M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z'
-
+const REPO_URL = `https://github.com/${REPO}`
 const releases = await getReleases()
 const latest = releases[0]
 const releaseMeta = [
@@ -18,21 +18,47 @@ const releaseMeta = [
   .filter(Boolean)
   .join(' · ')
 
-const features = [
-  ['⬚', 'Área, tela ou todos os monitores', 'Seleção precisa com lupa, medidas ao vivo e captura entre monitores.'],
-  ['➜', 'Anotações completas', 'Setas, retângulos, elipses, linhas, traço livre, texto e marcador.'],
-  ['▒', 'Privacidade', 'Desfoque ou tarja sólida para esconder e-mails, senhas e documentos.'],
-  ['①', 'Passo a passo', 'Numeração automática para tutoriais e documentação.'],
-  ['✦', 'Embelezar', 'Fundo em degradê, margem, sombra e cantos arredondados em um clique.'],
-  ['▦', 'Galeria', 'Tudo o que você capturou, para reabrir, reeditar e arrastar para outros apps.']
+// Antes e depois: a mesma captura (dados fictícios) em três estados, gerados pelo motor do vídeo
+const steps = [
+  {
+    id: 'captura',
+    label: 'Captura',
+    src: '/shots/raw.webp',
+    alt: 'Captura crua de um painel de vendas fictício, com e-mail e cartão do cliente visíveis.',
+    text: 'Aperte PrintScreen e arraste: a área exata, com lupa de precisão e a medida em pixels.'
+  },
+  {
+    id: 'anotada',
+    label: 'Anotada',
+    src: '/shots/annotated.webp',
+    alt: 'A mesma captura anotada: seta e texto “Pico em agosto!”, retângulo na receita, título marcado, passos numerados e dados do cliente desfocados.',
+    text: 'Seta, retângulo, texto, marcador e numeração de passos. E o desfoque esconde o e-mail e o cartão antes de você compartilhar.'
+  },
+  {
+    id: 'embelezada',
+    label: 'Embelezada',
+    src: '/shots/beautified.webp',
+    alt: 'A captura anotada com acabamento: fundo em degradê azul, margem, sombra e cantos arredondados.',
+    text: 'Fundo, margem, sombra e cantos arredondados direto no editor. Pronta para o chat, a issue ou a apresentação.'
+  }
 ]
 
 const shortcuts = [
-  ['Capturar área', 'PrintScreen'],
-  ['Capturar tela atual', 'Ctrl + PrintScreen'],
-  ['Capturar todos os monitores', 'Shift + PrintScreen'],
-  ['Copiar / Salvar', 'Ctrl + C / Ctrl + S'],
-  ['Desfazer / Refazer', 'Ctrl + Z / Ctrl + Y']
+  ['Capturar área', ['PrintScreen']],
+  ['Capturar a tela atual', ['Ctrl', 'PrintScreen']],
+  ['Capturar todos os monitores', ['Shift', 'PrintScreen']],
+  ['Copiar ou salvar', ['Ctrl', 'C'], ['Ctrl', 'S']],
+  ['Desfazer ou refazer', ['Ctrl', 'Z'], ['Ctrl', 'Y']]
+] as const
+
+// Presets reais do "embelezar" (src/shared/beautify.ts)
+const presets = [
+  { label: 'Grafite', bg: '#18181b' },
+  { label: 'Papel', bg: '#f4f4f5' },
+  { label: 'Pôr do sol', bg: 'linear-gradient(135deg, #ff7a18, #af002d)' },
+  { label: 'Oceano', bg: 'linear-gradient(135deg, #2e3192, #1bffff)' },
+  { label: 'Floresta', bg: 'linear-gradient(135deg, #11998e, #38ef7d)' },
+  { label: 'Violeta', bg: 'linear-gradient(135deg, #654ea3, #eaafc8)' }
 ]
 ---
 
@@ -40,84 +66,191 @@ const shortcuts = [
   title="ArcanShot — captura de tela com anotações para Windows"
   description="Capture, anote e compartilhe a sua tela em segundos. Gratuito, de código aberto e 100% local."
 >
-  <header class="hero">
-    <video class="hero-bg" autoplay muted loop playsinline preload="metadata" poster="/media/arcanshot-hero-poster.webp" aria-hidden="true">
-      <source src="/media/arcanshot-hero.webm" type="video/webm" />
-      <source src="/media/arcanshot-hero.mp4" type="video/mp4" />
-    </video>
-    <div class="hero-shade"></div>
-    <nav class="nav wrap">
-      <a class="brand" href="/"><img src="/favicon.png" alt="" width="32" height="32" /> ArcanShot</a>
-      <div class="nav-links">
-        <a href="#recursos">Recursos</a>
-        <a href="#novidades">Novidades</a>
-        <a href="#contribua">Contribua</a>
-        <a href="#apoie">Apoie</a>
-        <a href={`https://github.com/${REPO}`} rel="noopener">GitHub</a>
-      </div>
+  <link slot="head" rel="preload" as="image" href="/shots/screen.webp" fetchpriority="high" />
+
+  <a class="skip" href="#conteudo">Pular para o conteúdo</a>
+
+  <header class="hero" data-hero>
+    <div class="screen" aria-hidden="true">
+      <img class="screen-img" src="/shots/screen.webp" width="2880" height="1800" alt="" fetchpriority="high" />
+    </div>
+    <div class="screen screen--lit" aria-hidden="true">
+      <img class="screen-img" src="/shots/screen.webp" width="2880" height="1800" alt="" />
+    </div>
+
+    <nav class="nav wrap" aria-label="Principal">
+      <a class="brand" href="/"><img src="/favicon.png" alt="" width="28" height="28" /> ArcanShot</a>
+      <ul class="nav-links">
+        <li><a href="#como-funciona">Como funciona</a></li>
+        <li><a href="#novidades">Novidades</a></li>
+        <li><a href="#apoie">Apoie</a></li>
+        <li><a href={REPO_URL} rel="noopener">GitHub</a></li>
+      </ul>
     </nav>
-    <div class="hero-content wrap">
-      <h1>Capture. Anote.<br /><span>Compartilhe.</span></h1>
-      <p class="lead">Captura de tela para Windows no estilo Flameshot/Lightshot: selecione, anote, desfoque e embeleze em segundos.</p>
-      <div class="cta">
-        <a class="btn primary" href={DOWNLOAD_URL} data-download>
-          ⤓ Baixar para Windows
-        </a>
-        <button class="btn ghost" type="button" data-open-video>▶ Assistir apresentação</button>
-        <a class="btn ghost" href={`https://github.com/${REPO}`} rel="noopener">
-          <svg class="gh-mark" viewBox="0 0 16 16" width="18" height="18" aria-hidden="true"><path fill="currentColor" d={GITHUB_MARK} /></svg>
-          Colaborar no GitHub
-        </a>
+
+    <div class="hero-grid wrap">
+      <div class="hero-copy">
+        <h1>
+          <span class="mark-hl">Capture.</span>
+          <span class="mark-rect">Anote.<svg class="ann-rect" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><rect x="1.5" y="3" width="97" height="94" rx="4" pathLength="100" /></svg></span>
+          <span>Compartilhe.</span>
+        </h1>
+        <p class="lead">
+          Captura de tela para Windows: selecione, anote, desfoque o que é privado e cole onde quiser. Tudo fica no seu computador.
+        </p>
       </div>
-      <p class="meta" data-release-meta>{releaseMeta}</p>
+
+      <div class="hero-stage">
+        <div class="hero-sel" data-hero-sel role="img" aria-label="Exemplo de captura em andamento: um painel de vendas fictício selecionado, com os dados do cliente desfocados.">
+          <Selection tone="dark" class="hero-drag" />
+        </div>
+        <div class="toolbar" role="group" aria-label="Baixar e conhecer o ArcanShot">
+          <a class="tb-btn tb-btn--primary" href={DOWNLOAD_URL} data-download>
+            <Icon name="download" />
+            Baixar para Windows
+          </a>
+          <span class="tb-sep" aria-hidden="true"></span>
+          <button class="tb-btn" type="button" data-open-video>
+            <Icon name="play" />
+            Assistir
+          </button>
+          <a class="tb-btn" href={REPO_URL} rel="noopener">
+            <Icon name="github" />
+            GitHub
+          </a>
+        </div>
+        <p class="meta" data-release-meta>{releaseMeta}</p>
+      </div>
     </div>
   </header>
 
-  <main>
-    <section id="recursos" class="wrap section">
-      <h2>Tudo o que um print precisa</h2>
-      <div class="grid">
-        {features.map(([icon, title, text]) => (
-          <article class="card">
-            <span class="icon" aria-hidden="true">{icon}</span>
-            <h3>{title}</h3>
-            <p>{text}</p>
-          </article>
+  <main id="conteudo">
+    <section id="como-funciona" class="section wrap steps" data-steps>
+      <h2>Do print cru ao print pronto.</h2>
+      <div class="steps-body">
+        <div class="steps-tabs" role="tablist" aria-label="Etapas da captura">
+          {steps.map((s, i) => (
+            <button
+              class="step-tab"
+              type="button"
+              role="tab"
+              id={`tab-${s.id}`}
+              aria-controls={`painel-${s.id}`}
+              aria-selected={i === 0 ? 'true' : 'false'}
+              tabindex={i === 0 ? 0 : -1}
+              data-step={i}
+            >
+              <span class="step-num">{i + 1}</span>
+              <span class="step-label">{s.label}</span>
+            </button>
+          ))}
+        </div>
+        <Selection as="figure" tone="dark" class="steps-frame">
+          {steps.map((s, i) => (
+            <img
+              class:list={['step-img', { 'is-active': i === 0 }]}
+              src={s.src}
+              width="2720"
+              height="1500"
+              alt={s.alt}
+              fetchpriority="low"
+              decoding="async"
+              aria-hidden={i === 0 ? undefined : 'true'}
+              data-step-img={i}
+            />
+          ))}
+          <figcaption class="steps-note">Dados fictícios.</figcaption>
+        </Selection>
+        {steps.map((s, i) => (
+          <p class="step-text" role="tabpanel" id={`painel-${s.id}`} aria-labelledby={`tab-${s.id}`} hidden={i !== 0}>
+            {s.text}
+          </p>
         ))}
       </div>
     </section>
 
-    <section class="wrap section split">
-      <div>
-        <h2>100% local</h2>
-        <p>Sem conta, sem nuvem, sem rastreamento. As capturas ficam no seu computador: na área de transferência ou na pasta que você escolher.</p>
-        <p class="muted">O código é aberto: qualquer pessoa pode conferir o que o app faz.</p>
-      </div>
-      <div class="card">
-        <h3>Atalhos padrão</h3>
-        <table class="shortcuts">
-          <tbody>
-            {shortcuts.map(([action, keys]) => (
-              <tr>
-                <td>{action}</td>
-                <td>{keys.split(' / ').map((k, i) => (<>{i > 0 && ' / '}<kbd>{k}</kbd></>))}</td>
-              </tr>
+    <section class="section wrap reasons" aria-labelledby="porque">
+      <h2 id="porque" class="visually-hidden">Por que o ArcanShot</h2>
+
+      <article class="reason" id="privacidade">
+        <div class="reason-copy">
+          <h3>Nada sai do seu computador.</h3>
+          <p>
+            Sem conta, sem nuvem, sem rastreamento. As capturas vão para a área de transferência ou para a pasta que você escolher.
+            O código é aberto: qualquer pessoa pode conferir o que o app faz.
+          </p>
+        </div>
+        <Selection class="reason-proof">
+          <dl class="settings">
+            <div><dt>Salvar em</dt><dd><code>C:\<wbr />Users\<wbr />você\<wbr />Pictures\<wbr />ArcanShot</code></dd></div>
+            <div><dt>Conta</dt><dd>Nenhuma</dd></div>
+            <div><dt>Envio de dados</dt><dd>Nenhum</dd></div>
+            <div><dt>Código-fonte</dt><dd>Aberto, licença MIT</dd></div>
+          </dl>
+        </Selection>
+      </article>
+
+      <article class="reason reason--flip" id="atalhos">
+        <div class="reason-copy">
+          <h3>Do atalho ao chat em segundos.</h3>
+          <p>
+            Aperte PrintScreen, selecione, anote e copie. Área, tela atual ou todos os monitores, e uma galeria para quando você tira uma
+            sequência de prints.
+          </p>
+        </div>
+        <Selection class="reason-proof">
+          <table class="shortcuts">
+            <caption class="visually-hidden">Atalhos padrão</caption>
+            <tbody>
+              {shortcuts.map(([action, ...combos]) => (
+                <tr>
+                  <th scope="row">{action}</th>
+                  <td>
+                    {combos.map((keys, i) => (
+                      <>
+                        {i > 0 && <span class="kbd-or">ou</span>}
+                        <span class="kbd-combo">{keys.map((k) => <kbd>{k}</kbd>)}</span>
+                      </>
+                    ))}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </Selection>
+      </article>
+
+      <article class="reason" id="embelezar">
+        <div class="reason-copy">
+          <h3>Prints prontos para compartilhar.</h3>
+          <p>
+            Fundo, margem, sombra e cantos arredondados, sem abrir outro programa. O acabamento é opcional: vem desligado e você liga
+            quando quiser.
+          </p>
+        </div>
+        <Selection class="reason-proof">
+          <ul class="presets" aria-label="Fundos disponíveis no embelezar">
+            {presets.map((p) => (
+              <li>
+                <span class="preset-chip" style={`--chip: ${p.bg}`}></span>
+                {p.label}
+              </li>
             ))}
-          </tbody>
-        </table>
-      </div>
+          </ul>
+        </Selection>
+      </article>
     </section>
 
-    <section id="novidades" class="wrap section">
+    <section id="novidades" class="section wrap news">
       <h2>Novidades</h2>
       {releases.length === 0 && (
         <p class="muted">Veja o histórico de versões no <a href={RELEASES_URL}>GitHub</a>.</p>
       )}
       <ol class="releases">
         {releases.map((r) => (
-          <li class="card">
+          <li>
             <div class="release-head">
-              <a href={r.url} rel="noopener"><strong>{r.name}</strong></a>
+              <a href={r.url} rel="noopener">{r.name}</a>
               <time datetime={r.date}>{formatDate(r.date)}</time>
             </div>
             {r.notes.length > 0 ? (
@@ -128,78 +261,102 @@ const shortcuts = [
           </li>
         ))}
       </ol>
-      <p><a href={RELEASES_URL} rel="noopener">Todas as versões →</a></p>
+      <a class="text-link" href={RELEASES_URL} rel="noopener">Todas as versões <Icon name="arrow" size={18} /></a>
     </section>
 
-    <section id="contribua" class="wrap section">
-      <h2>Contribua</h2>
-      <p class="section-lead">O ArcanShot é feito em público. Ideias, relatos de bug e código são muito bem-vindos.</p>
-      <div class="grid">
-        <a class="card link-card" href={`https://github.com/${REPO}`} rel="noopener">
-          <span class="icon" aria-hidden="true">★</span>
-          <h3>Dê uma estrela</h3>
-          <p>Ajuda o projeto a ser encontrado por mais gente.</p>
-        </a>
-        <a class="card link-card" href={`https://github.com/${REPO}/issues/new`} rel="noopener">
-          <span class="icon" aria-hidden="true">!</span>
-          <h3>Reporte um problema ou ideia</h3>
-          <p>Abra uma issue com o que aconteceu ou o que você gostaria de ver.</p>
-        </a>
-        <a class="card link-card" href={`https://github.com/${REPO}/blob/master/CONTRIBUTING.md`} rel="noopener">
-          <span class="icon" aria-hidden="true">{'</>'}</span>
-          <h3>Envie código</h3>
-          <p>Veja como rodar o projeto e abrir um pull request.</p>
-        </a>
-      </div>
-    </section>
-
-    <section id="apoie" class="wrap section split">
-      <div>
-        <h2>Apoie o projeto</h2>
-        <p>O ArcanShot é gratuito e sem anúncios. Se ele facilita o seu dia, considere uma doação via Pix, de qualquer valor. Ela ajuda a manter o site, o desenvolvimento e, no futuro, a assinatura digital do instalador.</p>
-        <p class="muted">No app do seu banco: <strong>Pix → Ler QR code</strong>, ou <strong>Pix Copia e Cola</strong> com o código ao lado.</p>
-      </div>
-      <div class="card pix">
-        <img src="/pix-qr.svg" width="220" height="220" alt="QR code Pix para doar ao ArcanShot" />
-        <label for="pix-code">Pix copia e cola</label>
-        <div class="copy-row">
-          <input id="pix-code" type="text" readonly value={pix.payload} />
-          <button class="btn primary small" type="button" data-copy="#pix-code">Copiar</button>
-        </div>
-        <p class="muted small" aria-live="polite" data-copy-status></p>
-        <p class="muted small">Chave aleatória: <code>{pix.key}</code></p>
-      </div>
-    </section>
-
-    <section class="wrap section faq">
+    <section id="perguntas" class="section wrap faq">
       <h2>Perguntas frequentes</h2>
-      <details>
-        <summary>O Windows mostrou “O Windows protegeu o computador”. É seguro?</summary>
-        <p>O instalador ainda não tem assinatura digital, então o SmartScreen avisa que o editor é desconhecido. Clique em <strong>Mais informações → Executar assim mesmo</strong>. O código-fonte e o processo de build são públicos no GitHub.</p>
-      </details>
-      <details>
-        <summary>Quanto custa?</summary>
-        <p>Nada. O ArcanShot é gratuito e de código aberto (licença MIT).</p>
-      </details>
-      <details>
-        <summary>Minhas capturas são enviadas para algum lugar?</summary>
-        <p>Não. O app não tem conta nem servidor: tudo fica no seu computador.</p>
-      </details>
-      <details>
-        <summary>Como atualizo?</summary>
-        <p>A partir da versão 0.3, o ArcanShot verifica sozinho ao iniciar e avisa quando sai uma versão nova. Clique no aviso para atualizar, ou ative a instalação automática em <strong>Configurações</strong>. Também dá para baixar o instalador nesta página: ele substitui a versão anterior e mantém suas configurações.</p>
-      </details>
+      <div class="faq-list">
+        <details>
+          <summary>O Windows mostrou “O Windows protegeu o computador”. É seguro?</summary>
+          <p>O instalador ainda não tem assinatura digital, então o SmartScreen avisa que o editor é desconhecido. Clique em <strong>Mais informações → Executar assim mesmo</strong>. O código-fonte e o processo de build são públicos no GitHub.</p>
+        </details>
+        <details>
+          <summary>Quanto custa?</summary>
+          <p>Nada. O ArcanShot é gratuito e de código aberto (licença MIT).</p>
+        </details>
+        <details>
+          <summary>Minhas capturas são enviadas para algum lugar?</summary>
+          <p>Não. O app não tem conta nem servidor: tudo fica no seu computador.</p>
+        </details>
+        <details>
+          <summary>Como atualizo?</summary>
+          <p>A partir da versão 0.3, o ArcanShot verifica sozinho ao iniciar e avisa quando sai uma versão nova. Clique no aviso para atualizar, ou ative a instalação automática em <strong>Configurações</strong>. Também dá para baixar o instalador nesta página: ele substitui a versão anterior e mantém suas configurações.</p>
+        </details>
+      </div>
     </section>
+
+    <section class="section wrap closer" aria-labelledby="baixar">
+      <Selection tone="dark" class="closer-sel">
+        <h2 id="baixar">Pronto para o próximo print?</h2>
+        <a class="tb-btn tb-btn--primary tb-btn--lg" href={DOWNLOAD_URL} data-download>
+          <Icon name="download" size={22} />
+          Baixar para Windows
+        </a>
+        <p class="meta">{releaseMeta}</p>
+      </Selection>
+    </section>
+
+    <div class="wrap duo">
+      <section id="contribua" class="section contrib">
+        <h2>Contribua</h2>
+        <p>O ArcanShot é feito em público. Ideias, relatos de bug e código são muito bem-vindos.</p>
+        <ul class="contrib-list">
+          <li>
+            <a href={REPO_URL} rel="noopener">
+              <Icon name="star" size={22} />
+              <span><strong>Dê uma estrela</strong> Ajuda o projeto a ser encontrado por mais gente.</span>
+            </a>
+          </li>
+          <li>
+            <a href={`${REPO_URL}/issues/new`} rel="noopener">
+              <Icon name="flag" size={22} />
+              <span><strong>Reporte um problema ou ideia</strong> Abra uma issue com o que aconteceu ou o que você gostaria de ver.</span>
+            </a>
+          </li>
+          <li>
+            <a href={`${REPO_URL}/blob/master/CONTRIBUTING.md`} rel="noopener">
+              <Icon name="code" size={22} />
+              <span><strong>Envie código</strong> Veja como rodar o projeto e abrir um pull request.</span>
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <section id="apoie" class="section support">
+        <h2><Icon name="heart" size={26} /> Apoie o projeto</h2>
+        <p>
+          O ArcanShot é gratuito e sem anúncios. Se ele facilita o seu dia, considere uma doação via Pix, de qualquer valor. Ela ajuda
+          a manter o site, o desenvolvimento e, no futuro, a assinatura digital do instalador.
+        </p>
+        <Selection class="pix">
+          <img src="/pix-qr.svg" width="176" height="176" alt="QR code Pix para doar ao ArcanShot" />
+          <div class="pix-body">
+            <p class="pix-how">No app do seu banco: <strong>Pix → Ler QR code</strong>, ou <strong>Pix Copia e Cola</strong> com o código abaixo.</p>
+            <label for="pix-code">Pix copia e cola</label>
+            <div class="copy-row">
+              <input id="pix-code" type="text" readonly value={pix.payload} />
+              <button class="tb-btn tb-btn--ghost" type="button" data-copy="#pix-code"><Icon name="copy" size={18} /> Copiar</button>
+            </div>
+            <p class="small" aria-live="polite" data-copy-status></p>
+            <p class="small">Chave aleatória: <code>{pix.key}</code></p>
+          </div>
+        </Selection>
+      </section>
+    </div>
   </main>
 
-  <footer class="wrap footer">
+  <footer class="footer wrap">
     <span>ArcanShot · MIT · feito por <a href="https://github.com/imfarias" rel="noopener">Vinicius Farias</a></span>
-    <span><a href="/apresentacao/">Apresentação interativa (Web Audio)</a> · <a href={`https://github.com/${REPO}`} rel="noopener">Código-fonte</a></span>
+    <span><a href="/apresentacao/">Apresentação interativa</a> · <a href={REPO_URL} rel="noopener">Código-fonte</a></span>
   </footer>
 
   <dialog class="video-dialog" data-video-dialog aria-label="Vídeo de apresentação do ArcanShot">
-    <button class="close" type="button" data-close-video aria-label="Fechar">✕</button>
-    <video controls preload="none" playsinline poster="/media/arcanshot-hero-poster.webp">
+    <div class="video-bar">
+      <span>Apresentação do ArcanShot · 56 s</span>
+      <button class="tb-btn tb-btn--icon" type="button" data-close-video aria-label="Fechar"><Icon name="close" /></button>
+    </div>
+    <video controls preload="none" playsinline poster="/shots/beautified.webp">
       <source src="/media/arcanshot-promo.webm" type="video/webm" />
       <source src="/media/arcanshot-promo.mp4" type="video/mp4" />
     </video>

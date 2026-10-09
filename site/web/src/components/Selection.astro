@@ -1,0 +1,20 @@
+---
+// Moldura de seleção do ArcanShot: borda tracejada, alças nos cantos e a etiqueta
+// com a medida real do elemento em pixels (preenchida pelo site.js via ResizeObserver).
+interface Props {
+  as?: 'div' | 'figure'
+  class?: string
+  tone?: 'light' | 'dark'
+  [key: string]: unknown
+}
+const { as: Tag = 'div', class: cls, tone = 'light', ...rest } = Astro.props
+---
+
+<Tag class:list={['sel', `sel--${tone}`, cls]} data-measure {...rest}>
+  <span class="sel-size" aria-hidden="true">0 × 0</span>
+  <i class="sel-h sel-h--tl" aria-hidden="true"></i>
+  <i class="sel-h sel-h--tr" aria-hidden="true"></i>
+  <i class="sel-h sel-h--bl" aria-hidden="true"></i>
+  <i class="sel-h sel-h--br" aria-hidden="true"></i>
+  <slot />
+</Tag>
