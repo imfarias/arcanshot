@@ -19,8 +19,7 @@ document.querySelectorAll('[data-measure]').forEach((el) => sizeObserver.observe
 const hero = document.querySelector('[data-hero]')
 const heroSel = document.querySelector('[data-hero-sel]')
 if (hero && heroSel) {
-  // coordenadas de /shots/screen.webp (SCREEN e SCREEN_FOCUS em site/promo/promo.js)
-  const IMG = { w: 2880, h: 1800 }
+  // coordenadas em /shots/screen.webp, 2880×1800 (SCREEN e SCREEN_FOCUS em site/promo/promo.js)
   // área de conteúdo do app (título, KPIs, gráfico, dados do cliente) que a seleção enquadra, 16:10
   const FOCUS_WIDE = { x: 1340, y: 476, w: 1200, h: 750 }
   // no celular, um recorte menor (título, 2 indicadores e o gráfico inteiro, 64:57) para o texto ficar legível;
