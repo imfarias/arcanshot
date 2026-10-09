@@ -15,7 +15,7 @@ for (const dir of ['media', 'apresentacao']) rmSync(join(pub, dir), { recursive:
 mkdirSync(join(pub, 'media'), { recursive: true })
 
 // só o vídeo completo da apresentação (o topo usa as capturas de public/shots)
-const media = readdirSync(join(promo, 'dist')).filter((f) => /^arcanshot-promo\.(mp4|webm)$/.test(f))
+const media = readdirSync(join(promo, 'dist')).filter((f) => /^arcanshot-promo\.(mp4|webm|vtt)$/.test(f))
 if (!media.length) throw new Error('site/promo/dist sem vídeos — rode `npm run promo:render` na raiz')
 for (const f of media) cpSync(join(promo, 'dist', f), join(pub, 'media', f))
 

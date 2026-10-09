@@ -1,9 +1,14 @@
 # ArcanShot
 
-Captura de tela para Windows no estilo Flameshot/Lightshot: selecione uma área, a tela
-atual ou todos os monitores; anote com retângulos, elipses, setas, linhas, texto,
-marcador, desfoque e numeração passo-a-passo; copie para o clipboard ou salve em pasta
-configurável. Fica residente na bandeja do sistema com atalhos globais.
+Captura de tela para Windows, do PrintScreen ao chat em segundos. Anote, desfoque o que é
+privado e deixe o print pronto para compartilhar. Tudo fica no seu computador: sem conta,
+sem nuvem, sem rastreamento.
+
+- **Rápido:** área, tela atual ou todos os monitores, com atalhos globais e o app na bandeja.
+- **Claro:** setas, retângulos, elipses, linhas, texto, marcador, desfoque, tarja e numeração de passos.
+- **Bonito:** fundo, margem, sombra e cantos arredondados direto no editor.
+
+Site: [arcanshot.vfconsultoria.dev](https://arcanshot.vfconsultoria.dev)
 
 ## Desenvolvimento
 

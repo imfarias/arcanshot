@@ -1,5 +1,5 @@
 // Releases do GitHub lidas em tempo de build. Sem rede/limite de API, o site sai com um
-// fallback e o script do cliente (public/release.js) atualiza a versão na hora.
+// fallback e o script do cliente (public/site.js) atualiza a versão e o link de download na hora.
 export const REPO = 'imfarias/arcanshot'
 export const DOWNLOAD_URL = `https://github.com/${REPO}/releases/latest/download/ArcanShot-Setup.exe`
 export const RELEASES_URL = `https://github.com/${REPO}/releases`
@@ -11,6 +11,20 @@ export interface Release {
   url: string
   notes: string[]
   sizeMb: number | null
+  /** A release tem o ArcanShot-Setup.exe de nome fixo (o que o link /latest/download usa). */
+  hasStableExe: boolean
+}
+
+/**
+ * Para onde o botão "Baixar" aponta. O link fixo /latest/download/ArcanShot-Setup.exe dá 404 se a
+ * última release saiu sem esse arquivo (build pela metade, upload manual); aí vai para a página da
+ * release, onde a pessoa vê o que existe. Sem dados do GitHub no build, mantém o link fixo (o
+ * site.js confere de novo no navegador).
+ */
+export function resolveDownload(releases: Pick<Release, 'url' | 'hasStableExe'>[]): string {
+  const latest = releases[0]
+  if (!latest || latest.hasStableExe) return DOWNLOAD_URL
+  return latest.url
 }
 
 interface GhRelease {
@@ -56,7 +70,8 @@ export async function getReleases(limit = 5): Promise<Release[]> {
           date: r.published_at,
           url: r.html_url,
           notes: notesFrom(r.body),
-          sizeMb: exe ? Math.round(exe.size / 1048576) : null
+          sizeMb: exe ? Math.round(exe.size / 1048576) : null,
+          hasStableExe: r.assets.some((a) => a.name === 'ArcanShot-Setup.exe')
         }
       })
   } catch (e) {

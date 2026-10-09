@@ -22,16 +22,21 @@ if (hero && heroSel) {
   // coordenadas de /shots/screen.webp (SCREEN e SCREEN_FOCUS em site/promo/promo.js)
   const IMG = { w: 2880, h: 1800 }
   // área de conteúdo do app (título, KPIs, gráfico, dados do cliente) que a seleção enquadra, 16:10
-  const FOCUS = { x: 1340, y: 476, w: 1200, h: 750 }
+  const FOCUS_WIDE = { x: 1340, y: 476, w: 1200, h: 750 }
+  // no celular, um recorte menor (título, 2 indicadores e o gráfico inteiro, 64:57) para o texto ficar legível;
+  // as bordas caem entre os cards, então nada é cortado no meio
+  const FOCUS_NARROW = { x: 1350, y: 480, w: 640, h: 570 }
   let progress = 1
 
   const layout = () => {
     const h = hero.getBoundingClientRect()
     const s = heroSel.getBoundingClientRect()
+    // Layout empilhado (≤960px, o mesmo corte do CSS): a tela fictícia vira um "monitor" escurecido em
+    // volta da seleção, sem a obrigação de cobrir o hero inteiro; no celular (≤640px), recorte menor.
+    const narrow = h.width <= 960
+    const FOCUS = h.width <= 640 ? FOCUS_NARROW : FOCUS_WIDE
     const cover = Math.max(h.width / IMG.w, h.height / IMG.h)
     const fit = Math.min(s.width / FOCUS.w, s.height / FOCUS.h)
-    // telas estreitas: a tela fictícia vira um "monitor" escurecido em volta da seleção, sem cobrir tudo
-    const narrow = h.width < 700
     const scale = narrow ? fit : Math.max(cover, fit)
     const selX = s.left - h.left
     const selY = s.top - h.top
@@ -128,11 +133,26 @@ if (stepsRoot) {
 
 // ── vídeo de apresentação ────────────────────────────────────────
 const dialog = document.querySelector('[data-video-dialog]')
-const video = dialog?.querySelector('video')
+const video = dialog?.querySelector('[data-video]')
+const videoError = dialog?.querySelector('[data-video-error]')
+// Falha de rede ou de formato: troca o player por uma mensagem com saída (tentar de novo ou a versão
+// interativa). Quando todas as <source> falham, o erro chega pela última delas, não pelo <video>.
+const showVideoError = () => {
+  video.hidden = true
+  videoError.hidden = false
+}
+video?.addEventListener('error', showVideoError)
+video?.querySelector('source:last-of-type')?.addEventListener('error', showVideoError)
+dialog?.querySelector('[data-video-retry]')?.addEventListener('click', () => {
+  videoError.hidden = true
+  video.hidden = false
+  video.load()
+  video.play().catch(() => {})
+})
 document.querySelectorAll('[data-open-video]').forEach((btn) =>
   btn.addEventListener('click', () => {
     dialog.showModal()
-    video.play().catch(() => {})
+    if (!video.hidden) video.play().catch(() => {})
   })
 )
 dialog?.addEventListener('close', () => video.pause())
@@ -141,16 +161,18 @@ dialog?.addEventListener('click', (e) => {
   if (e.target === dialog) dialog.close()
 })
 
-// ── versão sempre atual (o build já traz; aqui só se saiu uma depois) ──
+// ── versão e link de download sempre atuais (o build já traz; aqui só se saiu outra depois) ──
 const metas = document.querySelectorAll('[data-release-meta]')
 if (metas.length) {
   fetch('https://api.github.com/repos/imfarias/arcanshot/releases/latest')
     .then((r) => (r.ok ? r.json() : null))
     .then((r) => {
       if (!r?.tag_name) return
+      const exe = r.assets?.find((a) => a.name === 'ArcanShot-Setup.exe')
+      // Última release sem o instalador de nome fixo: o link /latest/download daria 404
+      if (!exe && r.html_url) document.querySelectorAll('[data-download]').forEach((a) => (a.href = r.html_url))
       const v = r.tag_name.replace(/^v/, '')
       if (metas[0].textContent.includes(`Versão ${v} `)) return
-      const exe = r.assets?.find((a) => a.name === 'ArcanShot-Setup.exe')
       const date = new Date(r.published_at).toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: 'long',

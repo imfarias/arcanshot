@@ -98,8 +98,10 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
+          # notas para quem usa o app (scripts/release-notes.mjs), não a lista técnica de PRs
+          node scripts/release-notes.mjs "${{ steps.version.outputs.version }}" > release-notes.md
           gh release create "v${{ steps.version.outputs.version }}" \
             dist-upload/*.exe update-meta/* \
             --target "${{ github.sha }}" \
             --title "ArcanShot v${{ steps.version.outputs.version }}" \
-            --generate-notes
+            --notes-file release-notes.md
