@@ -70,7 +70,7 @@ const presets = [
 
   <a class="skip" href="#conteudo">Pular para o conteúdo</a>
 
-  <header class="hero" data-hero>
+  <header class="hero" id="topo" data-hero>
     <div class="screen" aria-hidden="true">
       <img class="screen-img" src="/shots/screen.webp" width="2880" height="1800" alt="" fetchpriority="high" />
     </div>
@@ -82,7 +82,7 @@ const presets = [
       <a class="brand" href="/"><img src="/favicon.png" alt="" width="28" height="28" /> ArcanShot</a>
       <ul class="nav-links">
         <li><a href="#como-funciona">Como funciona</a></li>
-        <li><a href="#novidades">Novidades</a></li>
+        <li><a href="#instalacao">Instalação</a></li>
         <li><a href="#apoie">Apoie</a></li>
         <li><a href={REPO_URL} rel="noopener">GitHub</a></li>
       </ul>
@@ -169,7 +169,7 @@ const presets = [
       </div>
     </section>
 
-    <section class="section wrap reasons" aria-labelledby="porque">
+    <section id="diferenciais" class="section wrap reasons" aria-labelledby="porque">
       <h2 id="porque" class="visually-hidden">Por que o ArcanShot</h2>
 
       <article class="reason" id="privacidade">
@@ -190,7 +190,7 @@ const presets = [
         </Selection>
       </article>
 
-      <article class="reason reason--flip" id="atalhos">
+      <article class="reason reason--flip" id="rapido">
         <div class="reason-copy">
           <h3>Do atalho ao chat em segundos.</h3>
           <p>
@@ -199,24 +199,12 @@ const presets = [
           </p>
         </div>
         <Selection class="reason-proof">
-          <table class="shortcuts">
-            <caption class="visually-hidden">Atalhos padrão</caption>
-            <tbody>
-              {shortcuts.map(([action, ...combos]) => (
-                <tr>
-                  <th scope="row">{action}</th>
-                  <td>
-                    {combos.map((keys, i) => (
-                      <>
-                        {i > 0 && <span class="kbd-or">ou</span>}
-                        <span class="kbd-combo">{keys.map((k) => <kbd>{k}</kbd>)}</span>
-                      </>
-                    ))}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ol class="flow" aria-label="Do atalho ao chat">
+            <li><span class="step-num">1</span><strong>Capture</strong><span class="kbd-combo"><kbd>PrintScreen</kbd></span></li>
+            <li><span class="step-num">2</span><strong>Selecione</strong><span>a área, com lupa</span></li>
+            <li><span class="step-num">3</span><strong>Anote</strong><span>seta, texto, desfoque</span></li>
+            <li><span class="step-num">4</span><strong>Copie</strong><span class="kbd-combo"><kbd>Ctrl</kbd><kbd>C</kbd></span></li>
+          </ol>
         </Selection>
       </article>
 
@@ -241,32 +229,66 @@ const presets = [
       </article>
     </section>
 
-    <section id="novidades" class="section wrap news">
-      <h2>Novidades</h2>
-      {releases.length === 0 && (
-        <p class="muted">Veja o histórico de versões no <a href={RELEASES_URL}>GitHub</a>.</p>
-      )}
-      <ol class="releases">
-        {releases.map((r) => (
-          <li>
-            <div class="release-head">
-              <a href={r.url} rel="noopener">{r.name}</a>
-              <time datetime={r.date}>{formatDate(r.date)}</time>
-            </div>
-            {r.notes.length > 0 ? (
-              <ul>{r.notes.map((n) => <li>{n}</li>)}</ul>
-            ) : (
-              <p class="muted">Melhorias e correções.</p>
-            )}
-          </li>
-        ))}
-      </ol>
-      <a class="text-link" href={RELEASES_URL} rel="noopener">Todas as versões <Icon name="arrow" size={18} /></a>
+    <section id="atalhos" class="section section--tight wrap keys">
+      <div class="keys-copy">
+        <h2>Atalhos.</h2>
+        <p>Os de captura funcionam em qualquer programa e podem ser trocados nas Configurações.</p>
+      </div>
+      <Selection class="keys-proof">
+        <table class="shortcuts">
+          <caption class="visually-hidden">Atalhos padrão</caption>
+          <tbody>
+            {shortcuts.map(([action, ...combos]) => (
+              <tr>
+                <th scope="row">{action}</th>
+                <td>
+                  {combos.map((keys, i) => (
+                    <>
+                      {i > 0 && <span class="kbd-or">ou</span>}
+                      <span class="kbd-combo">{keys.map((k) => <kbd>{k}</kbd>)}</span>
+                    </>
+                  ))}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </Selection>
     </section>
 
-    <section id="perguntas" class="section wrap faq">
-      <h2>Perguntas frequentes</h2>
-      <div class="faq-list">
+    <section id="instalacao" class="section wrap install">
+      <h2>Instalação.</h2>
+      <div class="install-grid">
+        <div class="install-main">
+          <ol class="install-steps">
+            <li>
+              <span class="step-num">1</span>
+              <div>
+                <h3>Baixe o instalador</h3>
+                <p>{latest?.sizeMb ? `${latest.sizeMb} MB, ` : ''}para Windows 10 e 11. <a href={DOWNLOAD_URL} data-download>Baixar agora</a></p>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">2</span>
+              <div>
+                <h3>Se o Windows avisar</h3>
+                <p>O instalador ainda não tem assinatura digital, então o SmartScreen pode mostrar “O Windows protegeu o computador”. Clique em <strong>Mais informações → Executar assim mesmo</strong>.</p>
+              </div>
+            </li>
+            <li>
+              <span class="step-num">3</span>
+              <div>
+                <h3>Aperte PrintScreen</h3>
+                <p>O ArcanShot fica na bandeja do sistema. Selecione a área, anote e copie.</p>
+              </div>
+            </li>
+          </ol>
+          <a class="text-link" href={RELEASES_URL} rel="noopener">Todas as versões <Icon name="arrow" size={18} /></a>
+        </div>
+
+        <div class="faq" id="perguntas">
+          <h3 class="faq-title">Perguntas frequentes</h3>
+          <div class="faq-list">
         <details>
           <summary>O Windows mostrou “O Windows protegeu o computador”. É seguro?</summary>
           <p>O instalador ainda não tem assinatura digital, então o SmartScreen avisa que o editor é desconhecido. Clique em <strong>Mais informações → Executar assim mesmo</strong>. O código-fonte e o processo de build são públicos no GitHub.</p>
@@ -283,12 +305,14 @@ const presets = [
           <summary>Como atualizo?</summary>
           <p>A partir da versão 0.3, o ArcanShot verifica sozinho ao iniciar e avisa quando sai uma versão nova. Clique no aviso para atualizar, ou ative a instalação automática em <strong>Configurações</strong>. Também dá para baixar o instalador nesta página: ele substitui a versão anterior e mantém suas configurações.</p>
         </details>
+          </div>
+        </div>
       </div>
     </section>
 
-    <section class="section wrap closer" aria-labelledby="baixar">
-      <Selection tone="dark" class="closer-sel">
-        <h2 id="baixar">Pronto para o próximo print?</h2>
+    <section id="baixar" class="section wrap closer" aria-labelledby="baixar-titulo">
+      <Selection class="closer-sel">
+        <h2 id="baixar-titulo">Pronto para o próximo print?</h2>
         <a class="tb-btn tb-btn--primary tb-btn--lg" href={DOWNLOAD_URL} data-download>
           <Icon name="download" size={22} />
           Baixar para Windows
@@ -348,7 +372,7 @@ const presets = [
 
   <footer class="footer wrap">
     <span>ArcanShot · MIT · feito por <a href="https://github.com/imfarias" rel="noopener">Vinicius Farias</a></span>
-    <span><a href="/apresentacao/">Apresentação interativa</a> · <a href={REPO_URL} rel="noopener">Código-fonte</a></span>
+    <span><a href={RELEASES_URL} rel="noopener">Todas as versões</a> · <a href="/apresentacao/">Apresentação interativa</a> · <a href={REPO_URL} rel="noopener">Código-fonte</a></span>
   </footer>
 
   <dialog class="video-dialog" data-video-dialog aria-label="Vídeo de apresentação do ArcanShot">
