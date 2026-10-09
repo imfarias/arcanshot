@@ -11,7 +11,8 @@ Mode: Persuade. Visitor: usuário de Windows (devs/QA, suporte, documentação, 
 Action: baixar o instalador (botão principal); secundárias: assistir à apresentação, ver no GitHub.
 Proof: o próprio produto em ação (capturas renderizadas pelo motor do vídeo de apresentação, dados fictícios); release real do GitHub.
 Constraints: pt-BR; sem alegações inventadas (PRODUCT.md › Evidence); CSP script-src 'self' (nada inline); build code-led (sem geração de imagem).
-Untouched: conteúdo de Novidades, FAQ, Contribua e Apoie (Pix) — reestilizados, não reescritos.
+Untouched: conteúdo do FAQ, Contribua e Apoie (Pix) — reestilizados, não reescritos. Novidades removida da página por decisão do usuário (2026-10-09); o link "Todas as versões" fica na instalação e no rodapé.
+Order (layout, 2026-10-09): topo → prova (antes/depois) → 3 diferenciais (local, rápido, bonito) → atalhos → instalação + FAQ → chamada final → Contribua + Apoie; id em toda seção.
 
 ## Direction contract
 
