@@ -8,12 +8,12 @@ import {
   nativeImage
 } from 'electron'
 import { mkdirSync, writeFileSync } from 'node:fs'
-import { PDFDocument } from 'pdf-lib'
 import type { CaptureMode, AppSettings } from '@shared/types'
 import { validateSettings } from '@shared/settings'
 import { formatFilename } from '@shared/filenamePattern'
 import { SettingsStore } from './settingsStore'
 import { dataUrlToBuffer, saveCapture, saveToPath, uniquePath } from './saveImage'
+import { buildPdf } from './pdfBuilder'
 import { closeAllOverlays, closeOtherOverlays, getInitData, startCapture } from './overlay'
 import {
   clearReditContext,
@@ -40,18 +40,6 @@ function notify(settings: AppSettings, title: string, body: string): void {
   if (Notification.isSupported()) {
     new Notification({ title, body }).show()
   }
-}
-
-async function buildPdf(dataUrls: string[]): Promise<Buffer> {
-  const doc = await PDFDocument.create()
-  for (const dataUrl of dataUrls) {
-    const buf = dataUrlToBuffer(dataUrl)
-    const isPng = dataUrl.startsWith('data:image/png')
-    const img = isPng ? await doc.embedPng(buf) : await doc.embedJpg(buf)
-    const page = doc.addPage([img.width, img.height])
-    page.drawImage(img, { x: 0, y: 0, width: img.width, height: img.height })
-  }
-  return Buffer.from(await doc.save())
 }
 
 export function registerIpcHandlers(ctx: IpcContext): void {
@@ -261,7 +249,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
     }
   })
 
-  ipcMain.handle('gallery:export-pdf', async () => {
+  ipcMain.handle('gallery:export-pdf', async (_event, options?: { uniformSize?: unknown }) => {
     const data = getGalleryInitData()
     if (!data) return { ok: false, error: 'Galeria sem dados' }
 
@@ -275,7 +263,14 @@ export function registerIpcHandlers(ctx: IpcContext): void {
     if (dialogResult.canceled || !dialogResult.filePath) return { ok: true }
 
     try {
-      const pdfBuffer = await buildPdf(data.items.map((i) => i.dataUrl))
+      // A galeria manda o que está marcado na tela (vale mesmo se a preferência não chegou a
+      // ser gravada); qualquer outra coisa vinda do renderer cai no valor salvo.
+      const uniformSize =
+        typeof options?.uniformSize === 'boolean' ? options.uniformSize : settings.pdfUniformSize
+      const pdfBuffer = await buildPdf(
+        data.items.map((i) => i.dataUrl),
+        { uniformSize }
+      )
       writeFileSync(dialogResult.filePath, pdfBuffer)
       return { ok: true, filePath: dialogResult.filePath }
     } catch (err) {

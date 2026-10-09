@@ -89,4 +89,25 @@ describe('Fluxo integrado do formulário de configurações', () => {
     await screen.findByTestId('settings-success')
     expect(getStored().hotkeyFull).toBe('Ctrl+Alt+P')
   })
+
+  it('CT-FI-10: erro de validação → corrigir → salvar preserva a opção do PDF padronizado', async () => {
+    const { getStored } = fakeMain(settingsFactory({ pdfUniformSize: false, sequenceTimeoutSec: 5 }))
+    render(<SettingsForm />)
+    const user = userEvent.setup()
+    await screen.findByTestId('settings-form')
+
+    await user.click(screen.getByTestId('settings-pdf-uniform-size'))
+    const timeout = screen.getByTestId('settings-sequenceTimeoutSec')
+    await user.clear(timeout)
+    await user.type(timeout, '99')
+    await user.click(screen.getByTestId('settings-save'))
+    await screen.findByTestId('settings-error-sequence-timeout-sec')
+    expect(getStored().pdfUniformSize).toBe(false)
+
+    await user.clear(timeout)
+    await user.type(timeout, '8')
+    await user.click(screen.getByTestId('settings-save'))
+    await screen.findByTestId('settings-success')
+    expect(getStored()).toMatchObject({ pdfUniformSize: true, sequenceTimeoutSec: 8 })
+  })
 })

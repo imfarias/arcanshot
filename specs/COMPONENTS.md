@@ -10,7 +10,7 @@
 | HotkeyInput | `src/renderer/settings/HotkeyInput.tsx` | Input readonly que captura combinação de teclas e produz acelerador Electron | id, value, onChange + aria props | 0002 (settings) |
 | Magnifier | `src/renderer/overlay/components/Magnifier.tsx` | Lupa flutuante: pixels ampliados sem suavização, coordenadas e cor do pixel central | source, point, cssPerImage, viewport, onColorRead | 0008 (overlay) |
 | BeautifyPanel | `src/renderer/overlay/components/BeautifyPanel.tsx` | Painel de acabamento com preview ao vivo: fundo, margem, cantos, sombra | options, onChange, renderPreview | 0008 (overlay) |
-| Gallery | `src/renderer/gallery/Gallery.tsx` | Galeria de capturas em sequência: thumbnails arraстáveis, salvar em pasta, gerar PDF | Recebe dados via `galleryInit()` IPC | 0005 (gallery) |
+| Gallery | `src/renderer/gallery/Gallery.tsx` | Galeria de capturas em sequência: thumbnails arrastáveis, salvar em pasta, gerar PDF (com páginas padronizadas opcionais) | Recebe dados via `galleryInit()` IPC | 0005, 0009 (gallery) |
 
 ## Backend (serviços/utilitários compartilhados)
 | Nome | Caminho | Propósito | Assinatura |
@@ -26,6 +26,7 @@
 | beautify (puro) | `src/shared/beautify.ts` | Presets de fundo, geometria proporcional do acabamento e regra de formato | `BACKGROUND_PRESETS/computeBeautifyLayout/pickExportFormat/validateBeautify/beautifyFromSettings` |
 | beautify (canvas) | `src/renderer/overlay/lib/beautify.ts` | Aplica fundo, sombra e cantos arredondados sobre um recorte | `applyBeautify(canvas, opts)` / `roundRectPath(ctx, ...)` |
 | editor (modelo) | `src/renderer/overlay/lib/editor.ts` | Estado de anotações com undo/redo, render (inclui traço livre e tarja) e export com acabamento opcional | `createEditorState/addAnnotation/undo/redo/drawFreehand/exportSelection` |
+| pdfBuilder | `src/main/pdfBuilder.ts` | PDF da sequência (uma página por captura), com páginas padronizadas opcionais; sem Electron | `planPdfPages(sizes, uniform)` / `buildPdf(dataUrls, { uniformSize })` |
 
 ## Hooks / Composables / Mixins
 | Nome | Caminho | Propósito |

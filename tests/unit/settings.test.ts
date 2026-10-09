@@ -26,6 +26,15 @@ describe('mergeSettings (CT-UN-07)', () => {
     expect(merged.copyOnSave).toBe(base.copyOnSave)
   })
 
+  it('CT-ST-01: pdfUniformSize nasce false, é preservado quando válido e ignora tipo errado (0009)', () => {
+    expect(base.pdfUniformSize).toBe(false)
+    const { pdfUniformSize: _omit, ...antigo } = settingsFactory({ pdfUniformSize: true })
+    void _omit
+    expect(mergeSettings(base, antigo).pdfUniformSize).toBe(false)
+    expect(mergeSettings(base, { pdfUniformSize: true }).pdfUniformSize).toBe(true)
+    expect(mergeSettings(base, { pdfUniformSize: 'sim' }).pdfUniformSize).toBe(false)
+  })
+
   it('tolera entrada não-objeto', () => {
     expect(mergeSettings(base, null)).toEqual(base)
     expect(mergeSettings(base, 'lixo')).toEqual(base)

@@ -62,6 +62,8 @@ function openSettingsWindow(): void {
     width: 720,
     height: 680,
     title: 'ArcanShot — Configurações',
+    // o véu do DESIGN.md: sem clarão branco antes do primeiro paint
+    backgroundColor: '#0f0f13',
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),

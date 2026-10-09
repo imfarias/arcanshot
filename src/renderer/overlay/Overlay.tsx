@@ -202,9 +202,9 @@ export function Overlay(): ReactNode {
       const annotations = draft ? [...editor.annotations, draft] : editor.annotations
       renderAnnotations(ctx, base, annotations)
 
-      // máscara escura fora da seleção
+      // véu fora da seleção (o mesmo tom quase preto do site, DESIGN.md)
       ctx.save()
-      ctx.fillStyle = 'rgba(0, 0, 0, 0.5)'
+      ctx.fillStyle = 'rgba(9, 9, 12, 0.55)'
       if (!selection) {
         ctx.fillRect(0, 0, canvas.width, canvas.height)
       } else {
@@ -213,8 +213,8 @@ export function Overlay(): ReactNode {
         ctx.fillRect(0, s.y, s.x, s.height)
         ctx.fillRect(s.x + s.width, s.y, canvas.width - s.x - s.width, s.height)
         ctx.fillRect(0, s.y + s.height, canvas.width, canvas.height - s.y - s.height)
-        ctx.strokeStyle = '#ffffff'
-        ctx.lineWidth = Math.max(1, pxScale)
+        ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)'
+        ctx.lineWidth = Math.max(1, 1.5 * pxScale)
         ctx.setLineDash([6 * pxScale, 4 * pxScale])
         ctx.strokeRect(s.x, s.y, s.width, s.height)
       }
@@ -618,11 +618,11 @@ export function Overlay(): ReactNode {
 
       {selCss && (
         <div
-          className="size-badge"
+          className="size-badge size-label"
           data-testid="editor-size-badge"
           style={{
             left: selCss.x,
-            top: selCss.y > 34 ? selCss.y - 30 : selCss.y + 6
+            top: selCss.y > 36 ? selCss.y - 31 : selCss.y + 8
           }}
         >
           {Math.round(selection!.width)} × {Math.round(selection!.height)}

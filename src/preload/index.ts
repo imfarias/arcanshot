@@ -16,7 +16,8 @@ const api: ArcanshotApi = {
   getVersion: () => ipcRenderer.invoke('app:version'),
   galleryInit: () => ipcRenderer.invoke('gallery:init'),
   gallerySaveAll: () => ipcRenderer.invoke('gallery:save-all'),
-  galleryExportPdf: () => ipcRenderer.invoke('gallery:export-pdf'),
+  galleryExportPdf: (options?: { uniformSize?: boolean }) =>
+    ipcRenderer.invoke('gallery:export-pdf', options),
   // sendSync garante que startDrag é chamado durante o gesto de drag (sincrono)
   galleryDragItems: (indices: number[]) =>
     ipcRenderer.sendSync('gallery:drag-items-sync', indices) as { ok: boolean },

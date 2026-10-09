@@ -1,3 +1,5 @@
+@import '../shared/theme.css';
+
 *,
 *::before,
 *::after {
@@ -7,13 +9,12 @@
 }
 
 body {
-  font-family: system-ui, -apple-system, sans-serif;
-  background: #1a1a1a;
-  color: #e0e0e0;
   height: 100vh;
-  display: flex;
-  flex-direction: column;
   overflow: hidden;
+  background: var(--veil);
+  color: var(--on-veil);
+  font: 400 0.9rem/1.5 var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
 
 #root {
@@ -26,257 +27,295 @@ body {
   height: 100vh;
 }
 
-/* --- Header --- */
-
+/* ── cabeçalho ── */
 .gallery-header {
-  padding: 10px 16px;
-  background: #252525;
-  border-bottom: 1px solid #333;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
   flex-shrink: 0;
-  gap: 12px;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 24px 28px 6px;
 }
 
 .gallery-header h1 {
-  font-size: 14px;
-  font-weight: 600;
-  color: #e0e0e0;
+  font: 720 1.6rem/1.08 var(--font-display);
+  font-optical-sizing: auto;
+  letter-spacing: -0.026em;
+  color: #fff;
+}
+
+.gallery-hint {
+  margin-top: 6px;
+  font-size: 0.82rem;
+  color: var(--muted);
 }
 
 .gallery-header-actions {
   display: flex;
+  flex: none;
   gap: 8px;
 }
 
 .gallery-btn-text {
+  height: 32px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: 8px;
   background: none;
-  border: none;
-  color: #888;
-  font-size: 12px;
+  color: var(--select-soft);
+  font: 600 0.85rem/1 var(--font-body);
   cursor: pointer;
-  padding: 3px 6px;
-  border-radius: 4px;
-  transition: color 0.12s;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
 }
 
 .gallery-btn-text:hover {
-  color: #ccc;
-  background: #333;
+  background: var(--chrome);
+  color: #fff;
 }
 
-/* --- Grid --- */
-
+/* ── grade: miniaturas na "tela", a selecionada ganha a moldura de seleção ── */
 .gallery-grid-container {
   flex: 1;
   overflow-y: auto;
-  padding: 14px;
+  padding: 40px 28px 28px;
 }
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 44px 28px;
   list-style: none;
 }
 
 .gallery-item {
   position: relative;
-  border-radius: 6px;
-  overflow: hidden;
-  background: #252525;
-  border: 2px solid transparent;
+  aspect-ratio: 16 / 10;
+  background: #27272f;
+  outline: 1px solid var(--rule);
   cursor: grab;
-  transition: border-color 0.12s, background 0.12s;
-  outline: none;
+  transition: outline-color 160ms ease-out;
 }
 
 .gallery-item:hover {
-  border-color: #444;
-}
-
-.gallery-item--selected {
-  border-color: #4a9eff;
-  background: #1a2a3a;
-}
-
-.gallery-item--selected:hover {
-  border-color: #5aaaff;
+  outline-color: var(--chrome-line-2);
 }
 
 .gallery-item:active {
   cursor: grabbing;
 }
 
+.gallery-item--selected,
+.gallery-item--selected:hover {
+  outline-color: transparent;
+}
+
 .gallery-item img {
   display: block;
   width: 100%;
-  height: 130px;
+  height: 100%;
   object-fit: contain;
-  background: #111;
   cursor: pointer;
 }
 
-/* --- Checkbox --- */
+/* moldura de seleção: tracejado branco, alças brancas com borda azul, medida real */
+.sel-frame {
+  position: absolute;
+  inset: -1px;
+  z-index: 1;
+  border: 1.5px dashed rgba(255, 255, 255, 0.92);
+  pointer-events: none;
+}
 
+.sel-frame i {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: var(--paper-white);
+  border: 1.5px solid var(--select);
+}
+
+.sel-frame .h-tl {
+  top: -6px;
+  left: -6px;
+}
+.sel-frame .h-tr {
+  top: -6px;
+  right: -6px;
+}
+.sel-frame .h-bl {
+  bottom: -6px;
+  left: -6px;
+}
+.sel-frame .h-br {
+  bottom: -6px;
+  right: -6px;
+}
+
+.sel-frame .size-label {
+  position: absolute;
+  bottom: calc(100% + 9px);
+  left: -1px;
+}
+
+/* ── caixa de seleção ── */
 .gallery-item-checkbox-label {
   position: absolute;
-  top: 6px;
-  left: 6px;
+  top: 8px;
+  left: 8px;
   z-index: 2;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
   cursor: pointer;
 }
 
 .gallery-item-checkbox {
-  width: 15px;
-  height: 15px;
-  accent-color: #4a9eff;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
+  border-radius: 4px;
+  background: rgba(15, 15, 19, 0.55) center / 14px 14px no-repeat;
   cursor: pointer;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out;
 }
 
-/* --- Badge --- */
+.gallery-item-checkbox:checked {
+  border-color: var(--select);
+  background-color: var(--select);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
 
+/* ── número: o círculo de passo da ferramenta de numeração ── */
 .gallery-item-badge {
   position: absolute;
-  top: 6px;
-  right: 6px;
-  background: rgba(0, 0, 0, 0.65);
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: rgba(15, 15, 19, 0.7);
   color: #fff;
-  font-size: 11px;
-  font-weight: 700;
-  padding: 1px 5px;
-  border-radius: 3px;
+  font: 700 0.75rem/1 var(--font-body);
+  font-variant-numeric: tabular-nums;
   pointer-events: none;
 }
 
-/* --- Footer --- */
+.gallery-item--selected .gallery-item-badge {
+  background: var(--select);
+}
 
+/* ── rodapé: status à esquerda, barra de ações à direita ── */
 .gallery-footer {
-  padding: 10px 16px;
-  background: #252525;
-  border-top: 1px solid #333;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 8px;
   flex-shrink: 0;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 20px 18px;
+  border-top: 1px solid var(--rule);
 }
 
 .gallery-footer-left {
   display: flex;
+  flex: 1;
   align-items: center;
-  gap: 10px;
-}
-
-.gallery-footer-right {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: wrap;
+  min-width: 0;
 }
 
 .gallery-selection-count {
-  font-size: 12px;
-  color: #888;
+  font-size: 0.85rem;
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
-
-/* --- Buttons --- */
-
-.gallery-btn {
-  padding: 7px 14px;
-  border: none;
-  border-radius: 5px;
-  font-size: 13px;
-  font-weight: 500;
-  cursor: pointer;
-  transition: opacity 0.12s, background 0.12s;
-  white-space: nowrap;
-}
-
-.gallery-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-
-.gallery-btn:focus-visible {
-  outline: 2px solid #4a9eff;
-  outline-offset: 2px;
-}
-
-.gallery-btn-edit {
-  background: #2d4a6e;
-  color: #8ec5f5;
-  border: 1px solid #3a5f8a;
-}
-
-.gallery-btn-edit:not(:disabled):hover {
-  background: #3a5f8a;
-}
-
-.gallery-btn-primary {
-  background: #4a9eff;
-  color: #fff;
-}
-
-.gallery-btn-primary:not(:disabled):hover {
-  background: #3a8eef;
-}
-
-.gallery-btn-secondary {
-  background: #333;
-  color: #e0e0e0;
-  border: 1px solid #444;
-}
-
-.gallery-btn-secondary:not(:disabled):hover {
-  background: #444;
-}
-
-.gallery-btn-close {
-  background: transparent;
-  color: #888;
-  border: 1px solid #444;
-}
-
-.gallery-btn-close:hover {
-  color: #e0e0e0;
-  background: #333;
-}
-
-/* --- Feedback --- */
 
 .gallery-feedback {
-  font-size: 12px;
-  padding: 4px 8px;
-  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  font-size: 0.85rem;
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
+
+.gallery-feedback svg {
+  flex: none;
 }
 
 .gallery-feedback--success {
-  background: #1a3a1a;
-  color: #4caf50;
-  border: 1px solid #2a5a2a;
+  color: var(--chrome-text);
+}
+
+.gallery-feedback--success svg {
+  color: var(--select-soft);
 }
 
 .gallery-feedback--error {
-  background: #3a1a1a;
-  color: #f44336;
-  border: 1px solid #5a2a2a;
+  color: var(--mark-soft);
 }
 
-/* --- Loading --- */
+.gallery-bar {
+  flex: none;
+}
 
+/* 0009: opção do PDF, ao lado da barra */
+.gallery-option {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--on-veil-2);
+}
+
+.gallery-option label {
+  cursor: pointer;
+}
+
+.gallery-option input {
+  appearance: none;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1.5px solid var(--chrome-line-2);
+  border-radius: 4px;
+  background: var(--chrome) center / 14px 14px no-repeat;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out;
+}
+
+.gallery-option input:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+.gallery-option input:checked {
+  border-color: var(--select);
+  background-color: var(--select);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
+
+.gallery-option input:disabled,
+.gallery-option input:disabled + label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* ── carregando ── */
 .gallery-loading {
   display: flex;
   align-items: center;
   justify-content: center;
   height: 100%;
-  color: #555;
-  font-size: 14px;
+  color: var(--muted);
 }

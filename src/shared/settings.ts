@@ -22,7 +22,9 @@ export function defaultSettings(picturesDir: string): AppSettings {
     beautifyRounded: true,
     beautifyShadow: true,
     updateCheckOnStartup: true,
-    updateAutoInstall: false
+    updateAutoInstall: false,
+    // RN-07 (0009): desligado — o PDF continua como era até a pessoa optar.
+    pdfUniformSize: false
   }
 }
 

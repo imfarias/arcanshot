@@ -1,24 +1,26 @@
 import { useRef } from 'react'
 import type { KeyboardEvent, ReactNode } from 'react'
 import type { ToolId } from '@shared/types'
+import { Icon } from '../../shared/Icon'
+import type { IconName } from '../../shared/Icon'
 
 export type StrokeKey = 's' | 'm' | 'l'
 
 export const TOOLBAR_COLORS = ['#ef4444', '#f59e0b', '#22c55e', '#3b82f6', '#a855f7', '#111111']
 
-const TOOLS: { id: ToolId; label: string; icon: string }[] = [
-  { id: 'select', label: 'Ferramenta de seleção', icon: '⬚' },
-  { id: 'rect', label: 'Retângulo', icon: '▭' },
-  { id: 'ellipse', label: 'Elipse', icon: '◯' },
-  { id: 'arrow', label: 'Seta', icon: '➜' },
-  { id: 'line', label: 'Linha', icon: '╱' },
-  { id: 'pencil', label: 'Traço livre', icon: '✎' },
-  { id: 'highlight', label: 'Marcador', icon: '🖍' },
-  { id: 'blur', label: 'Desfoque', icon: '▒' },
-  { id: 'redact', label: 'Tarja sólida', icon: '█' },
-  { id: 'text', label: 'Texto', icon: 'T' },
-  { id: 'step', label: 'Numeração passo-a-passo', icon: '①' },
-  { id: 'eyedropper', label: 'Conta-gotas', icon: '◉' }
+const TOOLS: { id: ToolId; label: string; icon: IconName }[] = [
+  { id: 'select', label: 'Ferramenta de seleção', icon: 'select' },
+  { id: 'rect', label: 'Retângulo', icon: 'rect' },
+  { id: 'ellipse', label: 'Elipse', icon: 'ellipse' },
+  { id: 'arrow', label: 'Seta', icon: 'arrow' },
+  { id: 'line', label: 'Linha', icon: 'line' },
+  { id: 'pencil', label: 'Traço livre', icon: 'pencil' },
+  { id: 'highlight', label: 'Marcador', icon: 'highlight' },
+  { id: 'blur', label: 'Desfoque', icon: 'blur' },
+  { id: 'redact', label: 'Tarja sólida', icon: 'redact' },
+  { id: 'text', label: 'Texto', icon: 'text' },
+  { id: 'step', label: 'Numeração passo-a-passo', icon: 'step' },
+  { id: 'eyedropper', label: 'Conta-gotas', icon: 'eyedropper' }
 ]
 
 const STROKES: { key: StrokeKey; label: string; size: number }[] = [
@@ -89,12 +91,12 @@ export function Toolbar(props: ToolbarProps): ReactNode {
             data-testid={`editor-tool-${t.id}`}
             onClick={() => props.onToolChange(t.id)}
           >
-            {t.icon}
+            <Icon name={t.icon} />
           </button>
         ))}
       </div>
 
-      <div className="toolbar-sep" />
+      <div className="toolbar-sep" aria-hidden="true" />
 
       <div className="toolbar-group">
         {TOOLBAR_COLORS.map((c, i) => (
@@ -119,7 +121,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
         />
       </div>
 
-      <div className="toolbar-sep" />
+      <div className="toolbar-sep" aria-hidden="true" />
 
       <div className="toolbar-group">
         {STROKES.map((s) => (
@@ -138,7 +140,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
         ))}
       </div>
 
-      <div className="toolbar-sep" />
+      <div className="toolbar-sep" aria-hidden="true" />
 
       <div className="toolbar-group">
         <button
@@ -150,7 +152,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
           disabled={!props.canUndo}
           onClick={props.onUndo}
         >
-          ↩
+          <Icon name="undo" />
         </button>
         <button
           type="button"
@@ -161,24 +163,24 @@ export function Toolbar(props: ToolbarProps): ReactNode {
           disabled={!props.canRedo}
           onClick={props.onRedo}
         >
-          ↪
+          <Icon name="redo" />
         </button>
       </div>
 
-      <div className="toolbar-sep" />
+      <div className="toolbar-sep" aria-hidden="true" />
 
       <div className="toolbar-group">
         {props.showBeautify && (
           <button
             type="button"
-            className={`action-btn ${props.beautifyEnabled ? 'active' : ''}`}
+            className={`action-btn ${props.beautifyEnabled ? 'is-on' : ''}`}
             aria-label="Embelezar para compartilhar"
             aria-pressed={props.beautifyOpen ?? false}
             title="Embelezar para compartilhar"
             data-testid="editor-beautify-toggle"
             onClick={props.onToggleBeautify}
           >
-            ✨
+            <Icon name="beautify" />
           </button>
         )}
         <button
@@ -189,7 +191,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
           data-testid="editor-copy"
           onClick={props.onCopy}
         >
-          📋
+          <Icon name="copy" />
         </button>
         <button
           type="button"
@@ -199,7 +201,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
           data-testid="editor-save"
           onClick={props.onSave}
         >
-          💾
+          <Icon name="save" />
         </button>
         <button
           type="button"
@@ -209,7 +211,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
           data-testid="editor-save-as"
           onClick={props.onSaveAs}
         >
-          📁
+          <Icon name="folder" />
         </button>
         <button
           type="button"
@@ -219,7 +221,7 @@ export function Toolbar(props: ToolbarProps): ReactNode {
           data-testid="editor-cancel"
           onClick={props.onCancel}
         >
-          ✕
+          <Icon name="close" />
         </button>
       </div>
     </div>
