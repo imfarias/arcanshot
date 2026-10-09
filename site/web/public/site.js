@@ -19,8 +19,7 @@ document.querySelectorAll('[data-measure]').forEach((el) => sizeObserver.observe
 const hero = document.querySelector('[data-hero]')
 const heroSel = document.querySelector('[data-hero-sel]')
 if (hero && heroSel) {
-  // coordenadas de /shots/screen.webp (SCREEN e SCREEN_FOCUS em site/promo/promo.js)
-  const IMG = { w: 2880, h: 1800 }
+  // coordenadas em /shots/screen.webp, 2880×1800 (SCREEN e SCREEN_FOCUS em site/promo/promo.js)
   // área de conteúdo do app (título, KPIs, gráfico, dados do cliente) que a seleção enquadra, 16:10
   const FOCUS_WIDE = { x: 1340, y: 476, w: 1200, h: 750 }
   // no celular, um recorte menor (título, 2 indicadores e o gráfico inteiro, 64:57) para o texto ficar legível;
@@ -31,19 +30,15 @@ if (hero && heroSel) {
   const layout = () => {
     const h = hero.getBoundingClientRect()
     const s = heroSel.getBoundingClientRect()
-    // Layout empilhado (≤960px, o mesmo corte do CSS): a tela fictícia vira um "monitor" escurecido em
-    // volta da seleção, sem a obrigação de cobrir o hero inteiro; no celular (≤640px), recorte menor.
-    const narrow = h.width <= 960
+    // A seleção sempre enquadra o conteúdo do painel (FOCUS), em qualquer largura; a janela escurecida
+    // fica justa em volta. Não precisa cobrir o hero: o fundo da camada (#27272f) sob o véu já é a cor
+    // do site. (Forçar "cobrir" ampliava a tela em monitores largos e a seleção cortava os cards.)
     const FOCUS = h.width <= 640 ? FOCUS_NARROW : FOCUS_WIDE
-    const cover = Math.max(h.width / IMG.w, h.height / IMG.h)
-    const fit = Math.min(s.width / FOCUS.w, s.height / FOCUS.h)
-    const scale = narrow ? fit : Math.max(cover, fit)
+    const scale = Math.min(s.width / FOCUS.w, s.height / FOCUS.h)
     const selX = s.left - h.left
     const selY = s.top - h.top
-    const cx = selX + s.width / 2 - (FOCUS.x + FOCUS.w / 2) * scale
-    const cy = selY + s.height / 2 - (FOCUS.y + FOCUS.h / 2) * scale
-    const x = narrow ? cx : Math.min(0, Math.max(h.width - IMG.w * scale, cx))
-    const y = narrow ? cy : Math.min(0, Math.max(h.height - IMG.h * scale, cy))
+    const x = selX + s.width / 2 - (FOCUS.x + FOCUS.w / 2) * scale
+    const y = selY + s.height / 2 - (FOCUS.y + FOCUS.h / 2) * scale
     hero.style.setProperty('--img-x', `${x}px`)
     hero.style.setProperty('--img-y', `${y}px`)
     hero.style.setProperty('--img-s', String(scale))
