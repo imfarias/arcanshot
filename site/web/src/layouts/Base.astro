@@ -1,12 +1,20 @@
 ---
 import '@fontsource-variable/bricolage-grotesque/opsz.css'
 import '../styles/global.css'
+import { createHash } from 'node:crypto'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 interface Props {
   title: string
   description: string
 }
 const { title, description } = Astro.props
+// versão do site.js pelo conteúdo: cada deploy muda o endereço e o navegador não usa o arquivo antigo do cache
+const siteJsVersion = createHash('sha256')
+  .update(readFileSync(join(process.cwd(), 'public', 'site.js')))
+  .digest('hex')
+  .slice(0, 10)
 const ogImage = new URL('/shots/og.png', Astro.site)
 ---
 
@@ -32,6 +40,6 @@ const ogImage = new URL('/shots/og.png', Astro.site)
   </head>
   <body>
     <slot />
-    <script is:inline type="module" src="/site.js"></script>
+    <script is:inline type="module" src={`/site.js?v=${siteJsVersion}`}></script>
   </body>
 </html>
