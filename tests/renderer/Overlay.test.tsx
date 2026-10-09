@@ -588,6 +588,63 @@ describe('Overlay — embelezar', () => {
     expect(ctxCalls.some((c) => c.method === 'clip')).toBe(true)
   })
 
+  it('CT-FC-56: copiar/salvar com acabamento ligado informa o fundo para o PDF da galeria (0010)', async () => {
+    const [a, b] = displayInfoFactory.sideBySide()
+    const captures = [
+      displayCaptureFactory.fromDisplay(a, { dataUrl: 'data:image/png;base64,AAA' }),
+      displayCaptureFactory.fromDisplay(b, { dataUrl: 'data:image/png;base64,BBB' })
+    ]
+    imageSizes.set('data:image/png;base64,AAA', { width: 1920, height: 1080 })
+    imageSizes.set('data:image/png;base64,BBB', { width: 1920, height: 1080 })
+
+    const { api } = await renderOverlay({
+      mode: 'area',
+      displays: captures,
+      settings: settingsFactory.beautified({ beautifyBackground: 'violet' })
+    })
+    await enterEditMode()
+    fireEvent.click(screen.getByTestId('editor-copy'))
+    fireEvent.click(screen.getByTestId('editor-save'))
+    fireEvent.click(screen.getByTestId('editor-save-as'))
+
+    expect(api.copyImage).toHaveBeenCalledWith(expect.any(String), 'violet')
+    expect(api.saveImage).toHaveBeenCalledWith(expect.any(String), 'violet')
+    expect(api.saveImageAs).toHaveBeenCalledWith(expect.any(String), 'violet')
+  })
+
+  it('CT-FC-57: sem acabamento ou com fundo transparente, nenhum fundo é informado (0010)', async () => {
+    const [a, b] = displayInfoFactory.sideBySide()
+    const captures = [
+      displayCaptureFactory.fromDisplay(a, { dataUrl: 'data:image/png;base64,AAA' }),
+      displayCaptureFactory.fromDisplay(b, { dataUrl: 'data:image/png;base64,BBB' })
+    ]
+    imageSizes.set('data:image/png;base64,AAA', { width: 1920, height: 1080 })
+    imageSizes.set('data:image/png;base64,BBB', { width: 1920, height: 1080 })
+
+    for (const settings of [
+      settingsFactory({ beautifyEnabled: false, beautifyBackground: 'violet' }),
+      settingsFactory.beautified({ beautifyBackground: 'none' })
+    ]) {
+      const { api, unmount } = await renderOverlay({ mode: 'area', displays: captures, settings })
+      await enterEditMode()
+      fireEvent.click(screen.getByTestId('editor-copy'))
+      expect(api.copyImage).toHaveBeenCalledWith(expect.any(String), undefined)
+      unmount()
+    }
+  })
+
+  it('CT-FC-58: em re-edição nenhum fundo é informado (o acabamento não é reaplicado) (0010)', async () => {
+    imageSizes.set('data:image/png;base64,RED', { width: 800, height: 600 })
+    const { api } = await renderOverlay({
+      mode: 'redit',
+      displays: [displayCaptureFactory({ dataUrl: 'data:image/png;base64,RED' })],
+      settings: settingsFactory.beautified({ beautifyBackground: 'violet' })
+    })
+    await screen.findByRole('toolbar')
+    fireEvent.click(screen.getByTestId('editor-copy'))
+    expect(api.copyImage).toHaveBeenCalledWith(expect.any(String), undefined)
+  })
+
   it('CT-FC-55: em modo redit o botão de embelezar não aparece (RN-21)', async () => {
     imageSizes.set('data:image/png;base64,RED', { width: 800, height: 600 })
     const capture = displayCaptureFactory({ dataUrl: 'data:image/png;base64,RED' })

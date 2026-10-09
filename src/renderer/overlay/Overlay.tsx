@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react'
 import type { PointerEvent as ReactPointerEvent, ReactNode } from 'react'
 import type { Annotation, OverlayInitData, Point, Rect, ToolId } from '@shared/types'
 import type { BeautifyOptions } from '@shared/beautify'
-import { beautifyFromSettings } from '@shared/beautify'
+import { beautifyFromSettings, pageBackground } from '@shared/beautify'
 import {
   clampRectToBounds,
   dipRectToOverlayCss,
@@ -239,20 +239,27 @@ export function Overlay(): ReactNode {
     )
   }, [selection, editor, init, beautify])
 
+  // Fundo que ficou na imagem exportada (0010): a galeria usa para pintar a página do PDF.
+  // Na re-edição o acabamento não é reaplicado, então o item mantém o fundo que já tinha.
+  const exportedBackground = useCallback((): string | undefined => {
+    if (!beautify?.enabled || init?.mode === 'redit') return undefined
+    return pageBackground(beautify.background)?.id
+  }, [beautify, init])
+
   const handleCopy = useCallback(() => {
     const dataUrl = getDataUrl()
-    if (dataUrl) void window.arcanshot.copyImage(dataUrl)
-  }, [getDataUrl])
+    if (dataUrl) void window.arcanshot.copyImage(dataUrl, exportedBackground())
+  }, [getDataUrl, exportedBackground])
 
   const handleSave = useCallback(() => {
     const dataUrl = getDataUrl()
-    if (dataUrl) void window.arcanshot.saveImage(dataUrl)
-  }, [getDataUrl])
+    if (dataUrl) void window.arcanshot.saveImage(dataUrl, exportedBackground())
+  }, [getDataUrl, exportedBackground])
 
   const handleSaveAs = useCallback(() => {
     const dataUrl = getDataUrl()
-    if (dataUrl) void window.arcanshot.saveImageAs(dataUrl)
-  }, [getDataUrl])
+    if (dataUrl) void window.arcanshot.saveImageAs(dataUrl, exportedBackground())
+  }, [getDataUrl, exportedBackground])
 
   const handleCancel = useCallback(() => {
     void window.arcanshot.cancelOverlay()

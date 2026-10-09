@@ -25,6 +25,16 @@ describe('CaptureSession', () => {
     expect(onComplete).not.toHaveBeenCalled()
   })
 
+  it('CT-CS-10: addCapture guarda o fundo do embelezar só quando existe (0010)', () => {
+    session.addCapture('data:image/png;base64,AAA', 'violet')
+    session.addCapture('data:image/png;base64,BBB')
+    vi.runAllTimers()
+
+    const items: GalleryItem[] = onComplete.mock.calls[0][0]
+    expect(items[0]).toEqual({ index: 1, dataUrl: 'data:image/png;base64,AAA', background: 'violet' })
+    expect('background' in items[1]).toBe(false)
+  })
+
   it('CT-CS-02: 1 item no buffer — callback NÃO é chamado ao expirar', () => {
     session.addCapture('data:image/png;base64,AAA')
     vi.runAllTimers()

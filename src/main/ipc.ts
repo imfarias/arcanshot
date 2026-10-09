@@ -10,6 +10,7 @@ import {
 import { mkdirSync, writeFileSync } from 'node:fs'
 import type { CaptureMode, AppSettings } from '@shared/types'
 import { validateSettings } from '@shared/settings'
+import { pageBackground } from '@shared/beautify'
 import { formatFilename } from '@shared/filenamePattern'
 import { SettingsStore } from './settingsStore'
 import { dataUrlToBuffer, saveCapture, saveToPath, uniquePath } from './saveImage'
@@ -99,7 +100,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
     return { ok: true }
   })
 
-  ipcMain.handle('editor:copy', (_event, dataUrl: string) => {
+  ipcMain.handle('editor:copy', (_event, dataUrl: string, background?: unknown) => {
     try {
       const image = nativeImage.createFromDataURL(dataUrl)
       clipboard.writeImage(image)
@@ -112,7 +113,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
         updateGalleryItem(reditCtx.galleryIndex, dataUrl)
       } else {
         closeAllOverlays()
-        ctx.session?.addCapture(dataUrl)
+        ctx.session?.addCapture(dataUrl, pageBackground(background)?.id)
       }
       notify(settings, 'ArcanShot', 'Captura copiada para o clipboard')
       return { ok: true }
@@ -136,7 +137,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
     }
   })
 
-  ipcMain.handle('editor:save', (_event, dataUrl: string) => {
+  ipcMain.handle('editor:save', (_event, dataUrl: string, background?: unknown) => {
     const settings = ctx.store.load()
     let buffer: Buffer
     try {
@@ -163,13 +164,13 @@ export function registerIpcHandlers(ctx: IpcContext): void {
       updateGalleryItem(reditCtx.galleryIndex, dataUrl)
     } else {
       closeAllOverlays()
-      ctx.session?.addCapture(dataUrl)
+      ctx.session?.addCapture(dataUrl, pageBackground(background)?.id)
     }
     notify(settings, 'ArcanShot', `Salvo em ${result.filePath}`)
     return result
   })
 
-  ipcMain.handle('editor:save-as', async (event, dataUrl: string) => {
+  ipcMain.handle('editor:save-as', async (event, dataUrl: string, background?: unknown) => {
     const settings = ctx.store.load()
     const win = BrowserWindow.fromWebContents(event.sender)
     const defaultName = `${formatFilename(settings.filenamePattern, new Date())}.${settings.imageFormat}`
@@ -200,7 +201,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
         updateGalleryItem(reditCtx.galleryIndex, dataUrl)
       } else {
         closeAllOverlays()
-        ctx.session?.addCapture(dataUrl)
+        ctx.session?.addCapture(dataUrl, pageBackground(background)?.id)
       }
       notify(settings, 'ArcanShot', `Salvo em ${result.filePath}`)
     } else {
@@ -268,7 +269,7 @@ export function registerIpcHandlers(ctx: IpcContext): void {
       const uniformSize =
         typeof options?.uniformSize === 'boolean' ? options.uniformSize : settings.pdfUniformSize
       const pdfBuffer = await buildPdf(
-        data.items.map((i) => i.dataUrl),
+        data.items.map((i) => ({ dataUrl: i.dataUrl, background: i.background })),
         { uniformSize }
       )
       writeFileSync(dialogResult.filePath, pdfBuffer)
