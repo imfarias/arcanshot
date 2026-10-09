@@ -266,6 +266,51 @@ body {
   flex: none;
 }
 
+/* 0009: opção do PDF, ao lado da barra */
+.gallery-option {
+  display: flex;
+  flex: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: var(--on-veil-2);
+}
+
+.gallery-option label {
+  cursor: pointer;
+}
+
+.gallery-option input {
+  appearance: none;
+  flex: none;
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  border: 1.5px solid var(--chrome-line-2);
+  border-radius: 4px;
+  background: var(--chrome) center / 14px 14px no-repeat;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease-out,
+    border-color 160ms ease-out;
+}
+
+.gallery-option input:hover:not(:disabled) {
+  border-color: var(--muted);
+}
+
+.gallery-option input:checked {
+  border-color: var(--select);
+  background-color: var(--select);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m5 12.5 4.5 4.5L19 7.5'/%3E%3C/svg%3E");
+}
+
+.gallery-option input:disabled,
+.gallery-option input:disabled + label {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── carregando ── */
 .gallery-loading {
   display: flex;

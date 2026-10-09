@@ -28,11 +28,13 @@
 - [2026-06-12] [Líder] Editor do overlay trabalha 100% em pixel físico da imagem; conversão para CSS por um único fator `cssPerImage`. Toda geometria nova deve seguir esse sistema.
 - [2026-06-12] [Líder] Validação de formulário roda no renderer (UX) e no main (autoridade) usando o MESMO módulo `shared/settings` — nunca duplicar regras.
 
+- [2026-10-09] [Líder] Preferência que vale para uma ação imediata (ex.: `pdfUniformSize` no Gerar PDF) viaja **junto** com o pedido da ação (argumento do IPC, validado por tipo no main, com fallback para o valor salvo) — não depender da persistência ter terminado; persistir em paralelo, melhor-esforço.
 ## Problemas Recorrentes & Soluções
 - [2026-06-12] [Dev] `npm install` no Windows pode corromper `node_modules` (TAR_ENTRY_ERROR/ENOTEMPTY, provável interferência de antivírus) → apagar `node_modules` + `package-lock.json` e reinstalar.
 - [2026-06-12] [Tester] Testing Library não faz auto-cleanup entre testes quando `globals: false` no Vitest (elementos duplicados em `getByTestId`) → manter `globals: true` em `vitest.config.ts`.
 - [2026-06-12] [Tester] Para provocar erro de `mkdirSync` no Windows em teste, criar um arquivo comum e usar `arquivo/sub` como destino (caracteres ilegais variam por versão).
 
+- [2026-10-09] [Tester] `tests/main/pdfBuilder.test.ts` testava uma **cópia** de `buildPdf` (a original morava em `ipc.ts`, que importa Electron) → extrair a lógica para módulo puro (`src/main/pdfBuilder.ts`) e importar o real. Para PDFs com tamanhos variados, usar `tests/factories/imageFactory.ts` (PNG real de qualquer tamanho via zlib; JPEG real fixo 16×8).
 ## Pontos de Atenção
 - [2026-06-12] [Arquiteto] Multi-monitor com `scaleFactor` distinto (DPI): sempre converter entre coordenadas DIP (Electron `display.bounds`) e pixels físicos (imagem capturada) usando `scaleFactor` do display.
 - [2026-08-26] [Líder] Numa janela que **cruza monitores de DPI diferentes**, `CSS px == DIP` é FALSO: a janela adota o `devicePixelRatio` de um monitor só. Derive sempre o fator do valor medido (`window.innerWidth / larguraDaUniao`), nunca de `devicePixelRatio`.
@@ -44,11 +46,13 @@
 - [2026-08-26] [Tester] jsdom não implementa canvas 2D, decodificação de `Image` nem `PointerEvent`. Para testar componentes de canvas: stubar `HTMLCanvasElement.prototype.getContext` **registrando as chamadas** (permite asserção sobre o que foi desenhado), substituir `Image` por uma classe que dispara `onload` em `queueMicrotask`, e aliasar `window.PointerEvent = window.MouseEvent` (senão `fireEvent.pointerDown` perde `clientX`/`clientY`). Ver `tests/renderer/Overlay.test.tsx`.
 - [2026-06-12] [Arquiteto] `globalShortcut.register` pode falhar se outro app já usa a tecla (ex.: PrintScreen com OneDrive) — sempre tratar retorno `false` e informar o usuário.
 
+- [2026-10-09] [Líder] PDF da sequência usa 1 px = 1 pt (desde a 0005): prints grandes viram páginas fisicamente enormes. Tamanho físico (A4/Carta) ficou fora de escopo da 0009.
 ## Glossário do Domínio
 - Overlay: janela frameless em tela cheia que exibe a captura congelada para seleção/edição.
 - Anotação: objeto desenhado sobre a captura (retângulo, elipse, seta, linha, texto, marcador, desfoque, numeração).
 - Padrão de nome: template com tokens (`%Y`, `%m`, `%d`, `%H`, `%M`, `%S`) que gera o nome do arquivo salvo.
 
+- Página padronizada (0009): página do PDF da sequência com o tamanho da captura de maior área; prints menores centralizados sem ampliar, maiores reduzidos sem distorcer.
 ## Convenções de Código
 - Nomenclatura: arquivos `camelCase.ts`, componentes React `PascalCase.tsx`, canais IPC `dominio:acao`.
 - Tratamento de erro: handlers IPC retornam `{ ok: true, ... } | { ok: false, error }` — nunca lançam para o renderer.

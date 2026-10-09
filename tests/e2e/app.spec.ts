@@ -53,3 +53,14 @@ test('CT-E2E-03: padrão inválido mostra erro e não persiste', async () => {
   await expect(page.getByTestId('settings-error-filename-pattern')).toBeVisible()
   expect(existsSync(join(userDataDir, 'settings.json'))).toBe(false)
 })
+
+test('CT-E2E-04: opção de páginas do PDF com o mesmo tamanho persiste em settings.json (0009)', async () => {
+  const option = page.getByTestId('settings-pdf-uniform-size')
+  await expect(option).not.toBeChecked()
+  await option.check()
+  await page.getByTestId('settings-save').click()
+  await expect(page.getByTestId('settings-success')).toBeVisible()
+
+  const onDisk = JSON.parse(readFileSync(join(userDataDir, 'settings.json'), 'utf-8'))
+  expect(onDisk.pdfUniformSize).toBe(true)
+})

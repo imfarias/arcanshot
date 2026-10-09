@@ -362,6 +362,21 @@ export function SettingsForm(): ReactNode {
             </p>
             {fieldError('sequenceTimeoutSec')}
           </div>
+
+          <div className="field checkbox">
+            <input
+              id="pdfUniformSize"
+              data-testid="settings-pdf-uniform-size"
+              type="checkbox"
+              checked={settings.pdfUniformSize}
+              aria-describedby="pdfUniformSize-help"
+              onChange={(e) => update('pdfUniformSize', e.target.checked)}
+            />
+            <label htmlFor="pdfUniformSize">Padronizar o tamanho das páginas do PDF da sequência</label>
+            <span id="pdfUniformSize-help" className="help">
+              Todas as páginas ficam do tamanho da maior captura. As menores ficam centralizadas, sem esticar.
+            </span>
+          </div>
         </div>
       </section>
 

@@ -186,3 +186,37 @@ describe('SettingsForm', () => {
     })
   })
 })
+
+describe('SettingsForm — páginas do PDF com o mesmo tamanho (0009)', () => {
+  it('CT-FC-20: a opção aparece com o valor carregado e a ajuda vinculada', async () => {
+    await renderForm(mockApi({ getSettings: vi.fn().mockResolvedValue(settingsFactory.uniformPdf()) }))
+    const box = screen.getByTestId('settings-pdf-uniform-size')
+    expect(box).toBeChecked()
+    expect(box).toHaveAccessibleDescription(/maior captura/)
+  })
+
+  it('CT-FC-21: marcar e salvar envia pdfUniformSize no payload', async () => {
+    const { api } = await renderForm(
+      mockApi({ getSettings: vi.fn().mockResolvedValue(settingsFactory({ pdfUniformSize: false })) })
+    )
+    const user = userEvent.setup()
+    await user.click(screen.getByTestId('settings-pdf-uniform-size'))
+    await user.click(screen.getByTestId('settings-save'))
+    await screen.findByTestId('settings-success')
+    expect(api.saveSettings).toHaveBeenCalledWith(expect.objectContaining({ pdfUniformSize: true }))
+  })
+
+  it('CT-FC-21b: erro do main ao salvar mantém a opção marcada para tentar de novo', async () => {
+    await renderForm(
+      mockApi({
+        getSettings: vi.fn().mockResolvedValue(settingsFactory({ pdfUniformSize: false })),
+        saveSettings: vi.fn().mockRejectedValue(new Error('EPERM'))
+      })
+    )
+    const user = userEvent.setup()
+    await user.click(screen.getByTestId('settings-pdf-uniform-size'))
+    await user.click(screen.getByTestId('settings-save'))
+    expect(await screen.findByTestId('settings-global-error')).toHaveTextContent(/erro/i)
+    expect(screen.getByTestId('settings-pdf-uniform-size')).toBeChecked()
+  })
+})

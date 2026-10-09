@@ -13,10 +13,17 @@ export function Gallery(): ReactNode {
   const [selected, setSelected] = useState<Set<number>>(() => new Set())
   // tamanho real de cada captura, para a etiqueta da moldura de seleção
   const [sizes, setSizes] = useState<Record<number, string>>({})
+  // 0009: páginas do PDF com o mesmo tamanho; nasce da preferência salva
+  const [uniform, setUniform] = useState(false)
+
+  function applyData(d: GalleryInitData): void {
+    setData(d)
+    setUniform(d.settings.pdfUniformSize)
+  }
 
   useEffect(() => {
     void window.arcanshot.galleryInit().then((d) => {
-      if (d) setData(d)
+      if (d) applyData(d)
     })
   }, [])
 
@@ -24,7 +31,7 @@ export function Gallery(): ReactNode {
   useEffect(() => {
     const unsubscribe = window.arcanshot.onGalleryRefresh(() => {
       void window.arcanshot.galleryInit().then((d) => {
-        if (d) setData(d)
+        if (d) applyData(d)
       })
     })
     return unsubscribe
@@ -78,7 +85,7 @@ export function Gallery(): ReactNode {
   async function handleExportPdf(): Promise<void> {
     setBusy(true)
     try {
-      const result = await window.arcanshot.galleryExportPdf()
+      const result = await window.arcanshot.galleryExportPdf({ uniformSize: uniform })
       if (result.ok && result.filePath) {
         showFeedback('success', `PDF salvo em ${result.filePath}`)
       } else if (!result.ok && result.error) {
@@ -86,6 +93,17 @@ export function Gallery(): ReactNode {
       }
     } finally {
       setBusy(false)
+    }
+  }
+
+  function handleUniformChange(value: boolean): void {
+    setUniform(value)
+    // Persistência melhor-esforço (FA-3): se falhar, o PDF desta galeria ainda segue o que
+    // está marcado, porque o valor vai junto no pedido de exportação.
+    try {
+      void Promise.resolve(window.arcanshot.saveSettings({ pdfUniformSize: value })).catch(() => {})
+    } catch {
+      // idem
     }
   }
 
@@ -200,6 +218,22 @@ export function Gallery(): ReactNode {
                 : ''}
             </span>
           )}
+        </div>
+
+        <div className="gallery-option" title="Todas as páginas do PDF ficam do tamanho da maior captura">
+          <input
+            type="checkbox"
+            id="gallery-pdf-uniform"
+            data-testid="gallery-pdf-uniform"
+            checked={uniform}
+            disabled={busy}
+            aria-describedby="gallery-pdf-uniform-help"
+            onChange={(e) => handleUniformChange(e.target.checked)}
+          />
+          <label htmlFor="gallery-pdf-uniform">Páginas do mesmo tamanho</label>
+          <span id="gallery-pdf-uniform-help" hidden>
+            Ao gerar o PDF, todas as páginas ficam do tamanho da maior captura; as menores ficam centralizadas, sem esticar.
+          </span>
         </div>
 
         <div className="bar gallery-bar">

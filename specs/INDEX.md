@@ -9,3 +9,4 @@
 | 0005 | Sequência de Capturas com Galeria | Aprovado | 2026-06-13 |
 | 0007 | Seleção de Área Atravessando Múltiplos Monitores | Aprovado com ressalvas | 2026-08-26 |
 | 0008 | Ferramentas de Precisão e Embelezamento para Compartilhar | Aprovado com ressalvas | 2026-08-26 |
+| 0009 | Páginas do PDF com o Mesmo Tamanho | Aprovado | 2026-10-09 |

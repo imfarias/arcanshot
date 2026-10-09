@@ -24,6 +24,7 @@ export function settingsFactory(overrides: Partial<AppSettings> = {}): AppSettin
     beautifyShadow: faker.datatype.boolean(),
     updateCheckOnStartup: faker.datatype.boolean(),
     updateAutoInstall: faker.datatype.boolean(),
+    pdfUniformSize: faker.datatype.boolean(),
     ...overrides
   }
 }
@@ -42,6 +43,10 @@ settingsFactory.beautified = (overrides: Partial<AppSettings> = {}): AppSettings
 /** Embelezamento com fundo transparente — exercita a regra de forçar PNG (RN-18). */
 settingsFactory.transparentBeautify = (overrides: Partial<AppSettings> = {}): AppSettings =>
   settingsFactory.beautified({ beautifyBackground: 'none', imageFormat: 'jpg', ...overrides })
+
+/** PDF da sequência com páginas padronizadas (0009). */
+settingsFactory.uniformPdf = (overrides: Partial<AppSettings> = {}): AppSettings =>
+  settingsFactory({ pdfUniformSize: true, ...overrides })
 
 settingsFactory.jpg = (overrides: Partial<AppSettings> = {}): AppSettings =>
   settingsFactory({ imageFormat: 'jpg', jpgQuality: 85, ...overrides })

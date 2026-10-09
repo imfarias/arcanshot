@@ -221,3 +221,100 @@ describe('Gallery', () => {
     expect(screen.getByRole('status')).toHaveTextContent(/Carregando/)
   })
 })
+
+describe('Gallery — páginas do PDF com o mesmo tamanho (0009)', () => {
+  function dataWith(pdfUniformSize: boolean): GalleryInitData {
+    return { ...makeGalleryData(3), settings: settingsFactory({ pdfUniformSize }) }
+  }
+
+  it('CT-GL-20: a opção nasce com o valor salvo nas configurações', async () => {
+    await renderGallery({ galleryInit: vi.fn().mockResolvedValue(dataWith(true)) })
+    expect(screen.getByTestId('gallery-pdf-uniform')).toBeChecked()
+    expect(screen.getByLabelText('Páginas do mesmo tamanho')).toBe(screen.getByTestId('gallery-pdf-uniform'))
+  })
+
+  it('CT-GL-20b: desligada quando a preferência salva é false', async () => {
+    await renderGallery({ galleryInit: vi.fn().mockResolvedValue(dataWith(false)) })
+    expect(screen.getByTestId('gallery-pdf-uniform')).not.toBeChecked()
+  })
+
+  it('CT-GL-21: marcar persiste a preferência', async () => {
+    await renderGallery({
+      galleryInit: vi.fn().mockResolvedValue(dataWith(false)),
+      saveSettings: vi.fn().mockResolvedValue({ ok: true, settings: settingsFactory.uniformPdf() })
+    })
+    await userEvent.setup().click(screen.getByTestId('gallery-pdf-uniform'))
+    expect(window.arcanshot.saveSettings).toHaveBeenCalledWith({ pdfUniformSize: true })
+    expect(screen.getByTestId('gallery-pdf-uniform')).toBeChecked()
+  })
+
+  it('CT-GL-22: "Gerar PDF" envia o valor marcado na tela', async () => {
+    await renderGallery({
+      galleryInit: vi.fn().mockResolvedValue(dataWith(false)),
+      saveSettings: vi.fn().mockResolvedValue({ ok: true, settings: settingsFactory.uniformPdf() })
+    })
+    const user = userEvent.setup()
+    await user.click(screen.getByTestId('gallery-btn-export-pdf'))
+    expect(window.arcanshot.galleryExportPdf).toHaveBeenLastCalledWith({ uniformSize: false })
+
+    await user.click(screen.getByTestId('gallery-pdf-uniform'))
+    await user.click(screen.getByTestId('gallery-btn-export-pdf'))
+    expect(window.arcanshot.galleryExportPdf).toHaveBeenLastCalledWith({ uniformSize: true })
+  })
+
+  it('CT-GL-23: falha ao salvar a preferência não desmarca nem impede o PDF padronizado', async () => {
+    await renderGallery({
+      galleryInit: vi.fn().mockResolvedValue(dataWith(false)),
+      saveSettings: vi.fn().mockRejectedValue(new Error('disco cheio'))
+    })
+    const user = userEvent.setup()
+    await user.click(screen.getByTestId('gallery-pdf-uniform'))
+    expect(screen.getByTestId('gallery-pdf-uniform')).toBeChecked()
+
+    await user.click(screen.getByTestId('gallery-btn-export-pdf'))
+    expect(window.arcanshot.galleryExportPdf).toHaveBeenCalledWith({ uniformSize: true })
+    await screen.findByTestId('gallery-feedback')
+    expect(screen.getByTestId('gallery-feedback')).toHaveTextContent(/C:\\doc\.pdf/)
+  })
+
+  it('CT-GL-23b: saveSettings que lança de forma síncrona também não quebra a galeria', async () => {
+    await renderGallery({
+      galleryInit: vi.fn().mockResolvedValue(dataWith(false)),
+      saveSettings: vi.fn().mockImplementation(() => {
+        throw new Error('ponte indisponível')
+      })
+    })
+    await userEvent.setup().click(screen.getByTestId('gallery-pdf-uniform'))
+    expect(screen.getByTestId('gallery-pdf-uniform')).toBeChecked()
+  })
+
+  it('CT-GL-24: a opção fica desabilitada enquanto o PDF é gerado', async () => {
+    let finish: (v: { ok: boolean; filePath?: string }) => void = () => {}
+    await renderGallery({
+      galleryInit: vi.fn().mockResolvedValue(dataWith(true)),
+      galleryExportPdf: vi.fn().mockReturnValue(new Promise((r) => (finish = r)))
+    })
+    const user = userEvent.setup()
+    await user.click(screen.getByTestId('gallery-btn-export-pdf'))
+    expect(screen.getByTestId('gallery-pdf-uniform')).toBeDisabled()
+
+    finish({ ok: true, filePath: 'C:\\doc.pdf' })
+    await waitFor(() => expect(screen.getByTestId('gallery-pdf-uniform')).toBeEnabled())
+  })
+
+  it('CT-GL-25: erro ao gerar mostra a mensagem e preserva a opção', async () => {
+    await renderGallery({
+      galleryInit: vi.fn().mockResolvedValue(dataWith(true)),
+      galleryExportPdf: vi.fn().mockResolvedValue({ ok: false, error: 'Arquivo em uso' })
+    })
+    await userEvent.setup().click(screen.getByTestId('gallery-btn-export-pdf'))
+    await screen.findByTestId('gallery-feedback')
+    expect(screen.getByTestId('gallery-feedback')).toHaveTextContent(/Arquivo em uso/)
+    expect(screen.getByTestId('gallery-pdf-uniform')).toBeChecked()
+  })
+
+  it('CT-GL-26: sem violações de acessibilidade com a opção (axe)', async () => {
+    const { container } = await renderGallery({ galleryInit: vi.fn().mockResolvedValue(dataWith(true)) })
+    expect(await axe(container)).toHaveNoViolations()
+  })
+})

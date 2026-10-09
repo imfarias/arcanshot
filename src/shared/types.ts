@@ -36,6 +36,8 @@ export interface AppSettings {
   updateCheckOnStartup: boolean
   /** Baixa a versão nova em segundo plano e instala ao sair do app. */
   updateAutoInstall: boolean
+  /** PDF da sequência com todas as páginas do tamanho da maior captura (0009). */
+  pdfUniformSize: boolean
 }
 
 export interface DisplayInfo {
@@ -122,7 +124,10 @@ export interface ArcanshotApi {
   getVersion(): Promise<string>
   galleryInit(): Promise<GalleryInitData>
   gallerySaveAll(): Promise<{ ok: boolean; folder?: string; error?: string }>
-  galleryExportPdf(): Promise<{ ok: boolean; filePath?: string; error?: string }>
+  /** Sem `uniformSize`, o main usa a preferência salva (`pdfUniformSize`). */
+  galleryExportPdf(options?: {
+    uniformSize?: boolean
+  }): Promise<{ ok: boolean; filePath?: string; error?: string }>
   galleryDragItems(indices: number[]): { ok: boolean }
   galleryEditItem(index: number): Promise<{ ok: boolean }>
   galleryClose(): Promise<void>
