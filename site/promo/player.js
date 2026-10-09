@@ -1,5 +1,5 @@
 // Player ao vivo (AudioContext) + API window.promo usada por scripts/promo/render.mjs
-import { load, drawFrame, buildMix, renderAudio } from './promo.js'
+import { load, drawFrame, buildMix, renderAudio, renderStill, STILL_SIZES } from './promo.js'
 
 const params = new URLSearchParams(location.search)
 const cv = document.getElementById('cv')
@@ -15,6 +15,16 @@ window.promo = {
   frame(t, mime = 'image/jpeg', q = 0.95) {
     drawFrame(ctx, t, tl, opts)
     return cv.toDataURL(mime, q).split(',')[1]
+  },
+  still(kind, scale = 2) {
+    const [w, h] = STILL_SIZES[kind]
+    const c = document.createElement('canvas')
+    c.width = Math.round(w * scale)
+    c.height = Math.round(h * scale)
+    const x = c.getContext('2d')
+    x.scale(scale, scale)
+    renderStill(x, kind)
+    return c.toDataURL('image/png').split(',')[1]
   },
   async audioBase64() {
     const bytes = new Uint8Array(await renderAudio(tl, narration))

@@ -1421,4 +1421,66 @@ export async function renderAudio(tl, narration, sampleRate = 48000) {
   return encodeWav(await ctx.startRendering())
 }
 
+// ── quadros estáticos para o site (mesmo motor; dados fictícios) ──
+// screen: a tela inteira, com os dados sensíveis já desfocados (fundo do hero)
+// raw / annotated / beautified: a mesma captura no mesmo lugar, para o antes/depois
+// og: imagem de compartilhamento 1200×630
+// Tela do hero: papel de parede neutro (#27272f vira o #0f0f13 do site sob o véu de 80%) e a
+// janela do app sem a barra lateral, à direita, para o título do site ficar sobre o fundo.
+// SCREEN_FOCUS (área de conteúdo, 16:10) é o que a seleção do hero enquadra: manter em sincronia
+// com FOCUS em site/web/public/site.js.
+export const SCREEN = { w: 2880, h: 1800, wx: 1320, wy: 420, crop: 220 }
+export const SCREEN_FOCUS = { x: SCREEN.wx + 20, y: SCREEN.wy + 56, w: 1200, h: 750 }
+export const STILL_SIZES = {
+  screen: [SCREEN.w, SCREEN.h],
+  raw: [SEL.w + 180, SEL.h + 180],
+  annotated: [SEL.w + 180, SEL.h + 180],
+  beautified: [SEL.w + 180, SEL.h + 180],
+  og: [1200, 630]
+}
+const NO_ANN = { arrow: 0, rect: 0, text: 0, hl: 0, blur: 0, steps: [0, 0, 0] }
+
+export function renderStill(ctx, kind, preset = 'ocean') {
+  if (!appCanvas) appCanvas = buildAppCanvas()
+  const [w, h] = STILL_SIZES[kind]
+  if (kind === 'screen') {
+    const { wx, wy, crop } = SCREEN
+    const cw = APP.w - crop
+    ctx.fillStyle = '#27272f'
+    ctx.fillRect(0, 0, w, h)
+    ctx.save()
+    ctx.shadowColor = 'rgba(0,0,0,0.5)'
+    ctx.shadowBlur = 60
+    ctx.shadowOffsetY = 24
+    rr(ctx, wx, wy, cw, APP.h, 14)
+    ctx.fillStyle = '#f8fafc'
+    ctx.fill()
+    ctx.restore()
+    ctx.save()
+    rr(ctx, wx, wy, cw, APP.h, 14)
+    ctx.clip()
+    ctx.drawImage(appCanvas, crop, 0, cw, APP.h, wx, wy, cw, APP.h)
+    text(ctx, 'Painel — Vendas', wx + 20, wy + 28, { size: 17, weight: 600, color: '#334155' })
+    // dados do cliente (e-mail, cartão, telefone) desfocados, como na demo do vídeo
+    const b = ANN.blur
+    const bx = b.x - APP.x - crop
+    const by = b.y - APP.y
+    ctx.beginPath()
+    ctx.rect(wx + bx, wy + by, b.w, b.h)
+    ctx.clip()
+    ctx.filter = 'blur(9px)'
+    ctx.drawImage(appCanvas, bx + crop - 20, by - 20, b.w + 40, b.h + 40, wx + bx - 20, wy + by - 20, b.w + 40, b.h + 40)
+    ctx.filter = 'none'
+    ctx.restore()
+  } else if (kind === 'raw' || kind === 'annotated') {
+    drawCapture(ctx, kind === 'raw' ? NO_ANN : FINAL_ST, 90, 90, 1)
+  } else if (kind === 'beautified') {
+    beautifiedCard(ctx, FINAL_ST, w / 2, h / 2, 1, 90, 18, 1, [[preset, 1]])
+  } else if (kind === 'og') {
+    ctx.fillStyle = gradientFor(ctx, 0, 0, w, h, preset)
+    ctx.fillRect(0, 0, w, h)
+    beautifiedCard(ctx, FINAL_ST, w / 2, h / 2, 0.82, 0, 14, 1, [])
+  }
+}
+
 export { buildMix }

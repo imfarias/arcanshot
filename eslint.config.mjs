@@ -30,7 +30,12 @@ export default tseslint.config(
         URLSearchParams: 'readonly',
         requestAnimationFrame: 'readonly',
         cancelAnimationFrame: 'readonly',
-        btoa: 'readonly'
+        btoa: 'readonly',
+        ResizeObserver: 'readonly',
+        IntersectionObserver: 'readonly',
+        performance: 'readonly',
+        setTimeout: 'readonly',
+        clearTimeout: 'readonly'
       }
     }
   }

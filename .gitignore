@@ -18,3 +18,10 @@ site/web/.astro/
 site/web/public/media/
 site/web/public/apresentacao/
 site/web/public/favicon.png
+site/promo/dist/shot-*.png
+
+# Impeccable: capturas de revisão, relatórios de crítica e estado local
+.impeccable/review/
+.impeccable/critique/
+.impeccable/live/
+.impeccable/config.local.json

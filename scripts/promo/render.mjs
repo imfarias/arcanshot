@@ -123,7 +123,19 @@ async function renderVideo({ name, captions, audio, from = 0, to, crf, posterAt 
 }
 
 try {
-  if (stills) {
+  if (args.includes('--site-shots')) {
+    // imagens do site: WebP p/ a página, PNG p/ o og:image
+    const out = resolve(root, '../web/public/shots')
+    mkdirSync(out, { recursive: true })
+    const page = await openPage(false)
+    for (const [kind, scale] of [['screen', 1], ['raw', 2], ['annotated', 2], ['beautified', 2], ['og', 1]]) {
+      const png = join(dist, `shot-${kind}.png`)
+      writeFileSync(png, Buffer.from(await page.evaluate(([k, s]) => window.promo.still(k, s), [kind, scale]), 'base64'))
+      if (kind === 'og') writeFileSync(join(out, 'og.png'), readFileSync(png))
+      else await ffmpeg(['-i', png, '-c:v', 'libwebp', '-quality', '84', join(out, `${kind}.webp`)])
+      console.log('shot', kind)
+    }
+  } else if (stills) {
     const page = await openPage(true)
     for (const t of stills.split(',').map(Number)) {
       const png = await page.evaluate((x) => window.promo.frame(x, 'image/png'), t)

@@ -1,0 +1,165 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-09T12:00:00Z",
+  "title": "Design System: ArcanShot",
+  "extensions": {
+    "colorMeta": {
+      "veil": { "role": "neutral", "displayName": "Véu", "canonical": "#0f0f13", "tonalRamp": ["#0f0f13", "#16161c", "#26262e", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#e4e4e7"] },
+      "screen-wallpaper": { "role": "neutral", "displayName": "Papel de Parede da Tela", "canonical": "#27272f", "tonalRamp": ["#0f0f13", "#18181e", "#27272f", "#3a3a44", "#52525c", "#71717c", "#a1a1ab", "#e4e4e8"] },
+      "rule": { "role": "neutral", "displayName": "Linha do Véu", "canonical": "#26262e", "tonalRamp": ["#0f0f13", "#16161c", "#26262e", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#e4e4e7"] },
+      "chrome": { "role": "neutral", "displayName": "Chrome", "canonical": "#18181b", "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#e4e4e7"] },
+      "chrome-line": { "role": "neutral", "displayName": "Borda de Chrome", "canonical": "#3f3f46", "tonalRamp": ["#09090b", "#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#e4e4e7"] },
+      "chrome-text": { "role": "neutral", "displayName": "Texto de Chrome", "canonical": "#e4e4e7", "tonalRamp": ["#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7"] },
+      "on-veil": { "role": "neutral", "displayName": "Texto sobre o Véu", "canonical": "#ececf1", "tonalRamp": ["#26262e", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#c4c4cc", "#d4d4d8", "#ececf1"] },
+      "on-veil-2": { "role": "neutral", "displayName": "Texto Secundário", "canonical": "#c4c4cc", "tonalRamp": ["#26262e", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#c4c4cc", "#d4d4d8", "#ececf1"] },
+      "on-veil-nav": { "role": "neutral", "displayName": "Texto de Navegação", "canonical": "#d4d4d8", "tonalRamp": ["#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#e4e4e7", "#f4f4f5"] },
+      "muted": { "role": "neutral", "displayName": "Esmaecido", "canonical": "#a1a1aa", "tonalRamp": ["#18181b", "#27272a", "#3f3f46", "#52525b", "#71717a", "#a1a1aa", "#d4d4d8", "#f4f4f5"] },
+      "paper": { "role": "neutral", "displayName": "Papel", "canonical": "#f8fafc", "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f8fafc"] },
+      "paper-white": { "role": "neutral", "displayName": "Branco", "canonical": "#ffffff", "tonalRamp": ["#0f172a", "#334155", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f1f5f9", "#ffffff"] },
+      "ink": { "role": "neutral", "displayName": "Tinta", "canonical": "#0f172a", "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9"] },
+      "ink-2": { "role": "neutral", "displayName": "Tinta Secundária", "canonical": "#475569", "tonalRamp": ["#0f172a", "#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#f1f5f9"] },
+      "paper-rule": { "role": "neutral", "displayName": "Linha do Papel", "canonical": "#e2e8f0", "tonalRamp": ["#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f8fafc"] },
+      "key-line": { "role": "neutral", "displayName": "Linha de Tecla", "canonical": "#cbd5e1", "tonalRamp": ["#1e293b", "#334155", "#475569", "#64748b", "#94a3b8", "#cbd5e1", "#e2e8f0", "#f8fafc"] },
+      "select": { "role": "primary", "displayName": "Azul de Seleção", "canonical": "#2563eb", "tonalRamp": ["#172554", "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#dbeafe"] },
+      "select-hover": { "role": "primary", "displayName": "Azul de Seleção Profundo", "canonical": "#1d4ed8", "tonalRamp": ["#172554", "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#dbeafe"] },
+      "select-soft": { "role": "primary", "displayName": "Azul Claro de Link", "canonical": "#93c5fd", "tonalRamp": ["#172554", "#1e3a8a", "#1d4ed8", "#2563eb", "#3b82f6", "#60a5fa", "#93c5fd", "#bfdbfe"] },
+      "mark": { "role": "secondary", "displayName": "Vermelho de Anotação", "canonical": "#ef4444", "tonalRamp": ["#450a0a", "#7f1d1d", "#b91c1c", "#dc2626", "#ef4444", "#f87171", "#fca5a5", "#fee2e2"] },
+      "highlight": { "role": "tertiary", "displayName": "Amarelo Marcador", "canonical": "rgba(250, 204, 21, 0.92)", "tonalRamp": ["#422006", "#713f12", "#a16207", "#ca8a04", "#eab308", "#facc15", "#fde047", "#fef9c3"] },
+      "size-label-bg": { "role": "neutral", "displayName": "Fundo da Etiqueta de Medida", "canonical": "rgba(17, 17, 17, 0.9)", "tonalRamp": ["#000000", "#111111", "#222222", "#333333", "#555555", "#777777", "#aaaaaa", "#dddddd"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Só o slogan do hero, uma palavra por linha, com as anotações de marcador e retângulo." },
+      "headline": { "displayName": "Headline", "purpose": "Títulos de seção, máx. 20ch, text-wrap balance." },
+      "title": { "displayName": "Title", "purpose": "Títulos das três razões." },
+      "title-sm": { "displayName": "Title pequeno", "purpose": "Perguntas do FAQ, nomes de release, abas de passo, itens de contribuição (620–650)." },
+      "body": { "displayName": "Body", "purpose": "Corpo em Segoe UI Variable, a fonte do sistema onde o app roda." },
+      "lead": { "displayName": "Lead", "purpose": "Parágrafo do hero, máx. 34ch." },
+      "label": { "displayName": "Label", "purpose": "Botões da barra de ferramentas." },
+      "measure": { "displayName": "Medida", "purpose": "Cascadia Mono tabular, só para a etiqueta W × H, kbd, caminhos e o código Pix." }
+    },
+    "shadows": [
+      { "name": "toolbar-float", "value": "0 12px 32px rgba(0, 0, 0, 0.45)", "purpose": "Só a barra de ferramentas, que flutua sobre a tela como no app." },
+      { "name": "preset-swatch", "value": "0 6px 14px rgba(15, 23, 42, 0.16)", "purpose": "Amostras de fundo do embelezar, imitando a sombra que o recurso aplica." },
+      { "name": "key-bevel", "value": "inset 0 -2px 0 #cbd5e1", "purpose": "Chanfro inferior do kbd." }
+    ],
+    "motion": [
+      { "name": "ease-out", "value": "cubic-bezier(0.16, 1, 0.3, 1)", "purpose": "Curva única do site; no JS, easeOutExpo 1 - 2^(-10t)." },
+      { "name": "hero-drag", "value": "1100ms, início 250ms", "purpose": "A área iluminada do hero é arrastada do canto uma vez, só com o topo visível." },
+      { "name": "headline-highlight", "value": "650ms, atraso 550ms", "purpose": "Faixa de marcador amarelo cresce sob 'Capture.'." },
+      { "name": "headline-rect", "value": "700ms, atraso 850ms", "purpose": "Retângulo vermelho é traçado em volta de 'Anote.'." },
+      { "name": "hero-chrome-in", "value": "400ms, atraso 1000ms", "purpose": "Barra, metadado e alças aparecem depois do arrasto." },
+      { "name": "steps-auto-advance", "value": "1200ms e 3000ms, uma vez", "purpose": "Antes/depois avança sozinho ao entrar 60% na tela e para; interação cancela." },
+      { "name": "step-crossfade", "value": "520ms opacidade", "purpose": "Troca entre as três etapas." },
+      { "name": "state", "value": "160–200ms", "purpose": "Cor de fundo, cor e borda em hover/seleção; giro da seta do FAQ." },
+      { "name": "reduced-motion", "value": "transition-duration 0ms", "purpose": "Sem entrada, sem avanço automático, rolagem sem suavização." }
+    ],
+    "breakpoints": [
+      { "name": "narrow-hero", "value": "700px" },
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "960px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Moldura de seleção",
+      "kind": "custom",
+      "refersTo": "selection-size-label",
+      "description": "Assinatura: tracejado branco, alças brancas com borda azul e a medida real em pixels. Envolve toda prova.",
+      "html": "<div class=\"ds-sel\"><span class=\"ds-sel-size\">640 × 360</span><i class=\"ds-sel-h ds-tl\"></i><i class=\"ds-sel-h ds-tr\"></i><i class=\"ds-sel-h ds-bl\"></i><i class=\"ds-sel-h ds-br\"></i><div class=\"ds-sel-body\">Salvar em <code>C:\\Users\\você\\Pictures</code></div></div>",
+      "css": ".ds-sel { position: relative; margin: 32px 16px 16px; background: #f8fafc; color: #0f172a; font: 400 1rem/1.6 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; } .ds-sel::before { content: ''; position: absolute; inset: -1px; z-index: 2; pointer-events: none; border: 1.5px dashed rgba(255,255,255,0.92); } .ds-sel-h { position: absolute; z-index: 3; width: 10px; height: 10px; background: #fff; border: 1.5px solid #2563eb; } .ds-tl { left: -6px; top: -6px; } .ds-tr { right: -6px; top: -6px; } .ds-bl { left: -6px; bottom: -6px; } .ds-br { right: -6px; bottom: -6px; } .ds-sel-size { position: absolute; left: -1px; bottom: calc(100% + 9px); z-index: 3; padding: 5px 8px; border-radius: 6px; background: rgba(17,17,17,0.9); color: #fff; font: 600 0.75rem/1 'Cascadia Mono', Consolas, monospace; font-variant-numeric: tabular-nums; white-space: nowrap; } .ds-sel-body { padding: 28px; } .ds-sel-body code { font: 500 0.86em 'Cascadia Mono', Consolas, monospace; padding: 2px 6px; border-radius: 4px; background: #eef2f7; }"
+    },
+    {
+      "name": "Barra de ferramentas (CTA)",
+      "kind": "nav",
+      "refersTo": "toolbar",
+      "description": "O chrome do app como grupo de chamadas: primário azul, separador, botões de barra.",
+      "html": "<div class=\"ds-toolbar\"><a class=\"ds-tb ds-tb-primary\" href=\"#\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 4v11\"/><path d=\"m7 10 5 5 5-5\"/><path d=\"M5 20h14\"/></svg>Baixar para Windows</a><span class=\"ds-tb-sep\"></span><button class=\"ds-tb\" type=\"button\"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"1.75\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M8 5.5v13l10.5-6.5z\"/></svg>Assistir</button></div>",
+      "css": ".ds-toolbar { display: inline-flex; align-items: center; gap: 4px; padding: 6px; background: rgba(24,24,27,0.96); border: 1px solid #3f3f46; border-radius: 12px; box-shadow: 0 12px 32px rgba(0,0,0,0.45); } .ds-tb { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: transparent; color: #e4e4e7; cursor: pointer; font: 600 0.97rem/1 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; text-decoration: none; white-space: nowrap; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1), color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-tb:hover { background: #3f3f46; color: #fff; } .ds-tb-primary { background: #2563eb; color: #fff; } .ds-tb-primary:hover { background: #1d4ed8; } .ds-tb:focus-visible { outline: 2px dashed #fff; outline-offset: 4px; border-radius: 2px; } .ds-tb-sep { width: 1px; height: 24px; margin: 0 4px; background: #3f3f46; }"
+    },
+    {
+      "name": "Botão primário grande",
+      "kind": "button",
+      "refersTo": "button-primary-lg",
+      "description": "CTA de fechamento sobre papel; foco troca para tinta.",
+      "html": "<div class=\"ds-paper\"><a class=\"ds-btn-lg\" href=\"#\">Baixar para Windows</a></div>",
+      "css": ".ds-paper { padding: 32px; background: #f8fafc; } .ds-btn-lg { display: inline-flex; align-items: center; gap: 8px; min-height: 56px; padding: 0 28px; border-radius: 10px; background: #2563eb; color: #fff; font: 600 1.08rem/1 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; text-decoration: none; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-btn-lg:hover { background: #1d4ed8; } .ds-btn-lg:focus-visible { outline: 2px dashed #0f172a; outline-offset: 4px; }"
+    },
+    {
+      "name": "Botão fantasma",
+      "kind": "button",
+      "refersTo": "button-ghost",
+      "description": "Ação secundária sobre papel (Copiar).",
+      "html": "<button class=\"ds-ghost\" type=\"button\">Copiar</button>",
+      "css": ".ds-ghost { min-height: 40px; padding: 0 16px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; cursor: pointer; font: 600 0.97rem/1 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif; transition: background-color 160ms cubic-bezier(0.16,1,0.3,1); } .ds-ghost:hover { background: #f1f5f9; } .ds-ghost:focus-visible { outline: 2px dashed #0f172a; outline-offset: 4px; }"
+    },
+    {
+      "name": "Campo copiar",
+      "kind": "input",
+      "refersTo": "input-copy",
+      "description": "Campo somente leitura em mono para o Pix copia e cola.",
+      "html": "<input class=\"ds-input\" type=\"text\" readonly value=\"00020126580014br.gov.bcb.pix\" />",
+      "css": ".ds-input { min-width: 0; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px; background: #fff; color: #0f172a; font: 500 0.8rem/1.2 'Cascadia Mono', Consolas, monospace; } .ds-input:focus-visible { outline: 2px dashed #0f172a; outline-offset: 4px; }"
+    },
+    {
+      "name": "Aba de passo com badge",
+      "kind": "chip",
+      "refersTo": "step-tab-active",
+      "description": "Abas do antes/depois; o badge ativo é o círculo de passo azul do app.",
+      "html": "<div class=\"ds-tabs\"><button class=\"ds-tab\" type=\"button\"><span class=\"ds-num\">1</span>Captura</button><button class=\"ds-tab is-on\" type=\"button\"><span class=\"ds-num\">2</span>Anotada</button></div>",
+      "css": ".ds-tabs { display: flex; flex-direction: column; gap: 6px; width: 240px; padding: 16px; background: #0f0f13; } .ds-tab { display: flex; align-items: center; gap: 14px; padding: 12px 14px; border: 1px solid transparent; border-radius: 10px; background: transparent; color: #a1a1aa; cursor: pointer; text-align: left; font: 650 1.12rem/1.2 'Bricolage Grotesque Variable', 'Segoe UI', sans-serif; transition: background-color 200ms cubic-bezier(0.16,1,0.3,1), color 200ms cubic-bezier(0.16,1,0.3,1); } .ds-tab:hover { color: #fff; } .ds-tab:focus-visible { outline: 2px dashed #fff; outline-offset: 4px; } .ds-tab.is-on { background: #18181b; border-color: #3f3f46; color: #fff; } .ds-num { display: inline-grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; border: 2px solid #52525b; color: #a1a1aa; font: 700 0.92rem/1 'Segoe UI Variable Text', 'Segoe UI', sans-serif; } .ds-tab.is-on .ds-num { background: #2563eb; border-color: #fff; color: #fff; }"
+    },
+    {
+      "name": "Tecla",
+      "kind": "chip",
+      "refersTo": "kbd",
+      "description": "Atalhos em painéis capturados.",
+      "html": "<span class=\"ds-combo\"><kbd class=\"ds-kbd\">Ctrl</kbd><kbd class=\"ds-kbd\">PrintScreen</kbd></span>",
+      "css": ".ds-combo { display: inline-flex; gap: 4px; padding: 16px; background: #f8fafc; } .ds-kbd { padding: 4px 8px; border: 1px solid #cbd5e1; border-radius: 6px; background: #fff; color: #0f172a; box-shadow: inset 0 -2px 0 #cbd5e1; font: 600 0.8rem/1 'Cascadia Mono', Consolas, monospace; }"
+    },
+    {
+      "name": "Slogan anotado",
+      "kind": "custom",
+      "refersTo": "display",
+      "description": "Display com as ferramentas marcador (amarelo) e retângulo (vermelho) do app.",
+      "html": "<h1 class=\"ds-h1\"><span class=\"ds-hl\">Capture.</span><span class=\"ds-rect\">Anote.</span><span>Compartilhe.</span></h1>",
+      "css": ".ds-h1 { margin: 0; padding: 24px; background: #0f0f13; color: #fff; font: 760 4rem/0.98 'Bricolage Grotesque Variable', 'Segoe UI Variable Display', 'Segoe UI', sans-serif; letter-spacing: -0.035em; } .ds-h1 > span { display: block; width: fit-content; } .ds-hl { padding: 0 0.06em; margin-left: -0.06em; background: linear-gradient(rgba(250,204,21,0.92), rgba(250,204,21,0.92)) no-repeat 0 88% / 100% 0.2em; } .ds-rect { padding: 0 0.16em; margin-left: -0.16em; outline: 4px solid #ef4444; outline-offset: -2px; border-radius: 4px; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "O site como uma captura",
+    "overview": "O site inteiro é o momento em que o ArcanShot está aberto sobre a tela: tudo o que não importa fica sob o véu escuro do overlay, e o que importa é selecionado — claro, nítido, com borda tracejada, alças nos cantos e a medida real em pixels. Não há uma \"marca\" sobreposta ao produto; o vocabulário visual é o próprio vocabulário do app: chrome de barra de ferramentas, retângulo vermelho de anotação, marcador amarelo, círculos de passo azuis.\n\nA densidade é de ferramenta, não de vitrine: superfícies planas, linhas finas de 1px, raios pequenos, texto direto. A profundidade vem do contraste véu/papel, não de sombras ou brilhos. O sistema recusa explicitamente o template SaaS escuro: texto em degradê, grade de cards com ícone em ladrilho, brilhos coloridos.",
+    "keyCharacteristics": [
+      "Fundo é o véu (#0f0f13); conteúdo de prova vive em regiões \"capturadas\" claras dentro de uma moldura de seleção.",
+      "A moldura de seleção (tracejado branco, alças brancas com borda azul, etiqueta `W × H` em mono) é a assinatura reutilizável.",
+      "As cores de acento são as cores das ferramentas do app: azul de seleção, vermelho de anotação, amarelo de marcador.",
+      "Display expressivo (Bricolage Grotesque) contra corpo nativo do Windows (Segoe UI Variable); mono só para medidas e teclas.",
+      "Movimento raro e narrativo: a seleção é arrastada uma vez, as anotações são traçadas uma vez."
+    ],
+    "rules": [
+      { "name": "A Regra do Véu", "body": "Todo fundo escuro é o véu. A tela do hero usa o papel de parede #27272f sob `rgba(9, 9, 12, 0.8)`, que dá exatamente #0f0f13: a borda entre a tela e o resto do site não pode aparecer, nem onde a imagem não cobre.", "section": "colors" },
+      { "name": "A Regra das Ferramentas", "body": "Acentos são as cores das ferramentas do app e têm o papel da ferramenta: azul seleciona e age, vermelho anota, amarelo marca. Nenhuma cor de acento vira fundo decorativo.", "section": "colors" },
+      { "name": "A Regra do Roxo", "body": "Roxo (#7c3aed) não entra no chrome do site. Aparece só no logo e dentro dos rasters, onde é o acento da interface fictícia retratada (gráfico, botão \"Compartilhar\") — conteúdo da captura, não do site.", "section": "colors" },
+      { "name": "A Regra da Mono Medida", "body": "Cascadia Mono existe para números de máquina: medidas em pixels, teclas, caminhos e o código Pix. Nunca em títulos, rótulos ou texto corrido.", "section": "typography" },
+      { "name": "A Regra do Display Nomeado", "body": "Títulos usam a Bricolage auto-hospedada; nunca a face de sistema como display. Títulos sempre com `text-wrap: balance`.", "section": "typography" },
+      { "name": "A Regra Sem Brilho", "body": "Nenhum glow colorido, nenhuma sombra em painéis capturados. O papel se destaca porque o véu está escuro, não porque flutua.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do colocar toda prova (configuração, atalho, preset, QR) dentro de uma moldura de seleção com etiqueta de medida real.",
+      "Do manter o fundo no Véu (#0f0f13) e usar o papel de parede #27272f sob `rgba(9, 9, 12, 0.8)` para qualquer \"tela\" que precise se fundir ao site.",
+      "Do usar o Azul de Seleção como única cor de ação; vermelho e amarelo só como anotação.",
+      "Do usar o tracejado branco de 2px como foco em todo elemento interativo, trocando para Tinta sobre papel.",
+      "Do separar listas com linhas de 1px em vez de cards.",
+      "Do gerar rasters de produto pelo `renderStill` de `site/promo/promo.js`, com dados fictícios e o sidecar de proveniência ao lado.",
+      "Do desligar todo movimento em `prefers-reduced-motion` e garantir que o site funcione sem `site.js`."
+    ],
+    "donts": [
+      "Don't usar texto em degradê.",
+      "Don't usar ícones dentro de ladrilhos ou grades de cards com ícone.",
+      "Don't usar brilhos/glows coloridos ou sombras em painéis capturados.",
+      "Don't usar roxo no chrome do site; roxo é do logo e da interface retratada nos rasters.",
+      "Don't usar mono fora de medidas, teclas, caminhos e códigos.",
+      "Don't usar o tracejado de 1.5px para decoração: ele significa \"selecionado\".",
+      "Don't arredondar regiões capturadas."
+    ]
+  }
+}

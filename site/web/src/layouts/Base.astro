@@ -1,4 +1,5 @@
 ---
+import '@fontsource-variable/bricolage-grotesque/opsz.css'
 import '../styles/global.css'
 
 interface Props {
@@ -6,7 +7,7 @@ interface Props {
   description: string
 }
 const { title, description } = Astro.props
-const ogImage = new URL('/media/arcanshot-hero-poster.webp', Astro.site)
+const ogImage = new URL('/shots/og.png', Astro.site)
 ---
 
 <!doctype html>
@@ -18,13 +19,16 @@ const ogImage = new URL('/media/arcanshot-hero-poster.webp', Astro.site)
     <meta name="description" content={description} />
     <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
     <link rel="icon" type="image/png" href="/favicon.png" />
-    <meta name="theme-color" content="#08061a" />
+    <meta name="theme-color" content="#0f0f13" />
     <meta property="og:type" content="website" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:image" content={ogImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
     <meta property="og:locale" content="pt_BR" />
     <meta name="twitter:card" content="summary_large_image" />
+    <slot name="head" />
   </head>
   <body>
     <slot />
