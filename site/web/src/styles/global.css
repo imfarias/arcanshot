@@ -6,7 +6,6 @@
   color-scheme: dark;
   /* véu e chrome do app */
   --veil: #0f0f13;
-  --veil-2: #16161c;
   --rule: #26262e;
   --chrome: #18181b;
   --chrome-line: #3f3f46;
@@ -51,7 +50,6 @@ a:hover { color: #bfdbfe; }
 h1, h2, h3 { font-family: var(--display); font-optical-sizing: auto; text-wrap: balance; }
 code { font-family: var(--mono); font-size: 0.86em; }
 .wrap { width: min(1200px, 100% - 32px); margin-inline: auto; }
-.muted { color: var(--muted); }
 .visually-hidden {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
@@ -260,7 +258,6 @@ kbd {
 .install-steps h3 { margin: 2px 0 6px; font-size: 1.25rem; font-weight: 650; color: #fff; }
 .install-steps p { margin: 0; color: var(--on-veil-2); max-width: 52ch; }
 .faq-title { margin: 0 0 4px; font-size: 1.25rem; font-weight: 650; color: #fff; }
-.text-link { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; }
 
 /* perguntas */
 .faq-list { max-width: 860px; }
@@ -311,9 +308,12 @@ kbd {
 .pix-how { margin: 0; color: var(--ink-2); font-size: 0.94rem; }
 .pix label { font-weight: 600; font-size: 0.92rem; }
 .copy-row { display: flex; gap: 8px; }
-.copy-row input {
+/* o código inteiro à vista (quebra linha), em vez de um campo de uma linha cortado */
+.copy-row { align-items: flex-start; }
+.copy-row textarea {
   flex: 1; min-width: 0; padding: 10px 12px; border: 1px solid #cbd5e1; border-radius: 8px;
-  background: #fff; color: var(--ink); font: 500 0.8rem/1.2 var(--mono);
+  background: #fff; color: var(--ink); font: 500 0.78rem/1.5 var(--mono);
+  resize: none; overflow: hidden; word-break: break-all; field-sizing: content;
 }
 .copy-row .tb-btn { min-height: 40px; }
 .small { margin: 0; font-size: 0.84rem; color: var(--ink-2); }
@@ -349,8 +349,12 @@ kbd {
   .reason--flip .reason-copy { order: 0; }
 }
 @media (max-width: 640px) {
-  .nav-links { gap: 18px; }
-  .nav-links li:nth-child(-n + 2) { display: none; }
+  /* menu: os quatro links numa segunda linha, em vez de só "Apoie" e "GitHub" */
+  .nav { flex-wrap: wrap; row-gap: 12px; padding-block: 16px 4px; }
+  .nav-links { width: 100%; justify-content: space-between; gap: 12px; font-size: 0.95rem; }
+  .nav-links a { display: inline-block; padding-block: 10px; }
+  /* topo: recorte 64:57 com o texto legível (FOCUS_NARROW no site.js) */
+  .hero-sel { aspect-ratio: 64 / 57; }
   .toolbar { display: flex; flex-wrap: wrap; width: 100%; }
   .toolbar .tb-btn { flex: 1; }
   .toolbar .tb-btn--primary { flex-basis: 100%; }
@@ -360,11 +364,29 @@ kbd {
   .step-label { font-size: 0.95rem; }
   .step-num { width: 26px; height: 26px; }
   .reason-proof { margin-top: 12px; }
-  .shortcuts th, .shortcuts td { display: block; text-align: left; }
-  .shortcuts td { padding-top: 0; border-top: 0; }
+  /* atalhos: só servem no PC, então ficam compactos (ação e teclas na mesma linha) */
+  .keys-proof { padding: 14px 16px; }
+  .shortcuts th, .shortcuts td { padding-block: 8px; font-size: 0.86rem; }
+  .shortcuts th { padding-right: 10px; }
+  kbd { padding: 3px 6px; font-size: 0.72rem; }
+  .kbd-or { margin: 0 4px; font-size: 0.78rem; }
   .pix { grid-template-columns: minmax(0, 1fr); }
+  .copy-row { flex-direction: column; align-items: stretch; }
   .pix img { order: 2; justify-self: center; }
 }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { transition-duration: 0ms !important; transition-delay: 0ms !important; }
 }
+
+/* novidades em uma linha, na instalação */
+.news-line { margin: 0; color: var(--on-veil-2); }
+.news-line a { font-weight: 600; }
+
+/* vídeo que não carregou: mensagem com saída no lugar do player */
+.video-error { display: grid; gap: 16px; padding: clamp(24px, 5vw, 48px); background: var(--paper); color: var(--ink); }
+.video-error[hidden] { display: none; }
+.video-error p { margin: 0; max-width: 60ch; }
+.video-error-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.video-error :focus-visible { outline-color: var(--ink); }
+/* o display:block do player venceria o atributo hidden */
+.video-dialog video[hidden] { display: none; }

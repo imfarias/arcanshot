@@ -2,12 +2,13 @@
 import Base from '../layouts/Base.astro'
 import Icon from '../components/Icon.astro'
 import Selection from '../components/Selection.astro'
-import { DOWNLOAD_URL, RELEASES_URL, REPO, formatDate, getReleases } from '../lib/releases'
+import { RELEASES_URL, REPO, formatDate, getReleases, resolveDownload } from '../lib/releases'
 import pix from '../data/pix.json'
 
 const REPO_URL = `https://github.com/${REPO}`
 const releases = await getReleases()
 const latest = releases[0]
+const downloadHref = resolveDownload(releases)
 const releaseMeta = [
   latest ? `Versão ${latest.tag.replace(/^v/, '')}` : 'Última versão no GitHub',
   latest && formatDate(latest.date),
@@ -17,6 +18,14 @@ const releaseMeta = [
 ]
   .filter(Boolean)
   .join(' · ')
+
+// Novidades em uma linha: o primeiro item das notas da última release ("Atualização automática: …")
+const firstNote = latest?.notes[0]?.split(':')[0]?.trim()
+const newsHeadline = latest
+  ? firstNote
+    ? `Novo na ${latest.tag.replace(/^v/, '')}: ${firstNote.charAt(0).toLowerCase()}${firstNote.slice(1)}.`
+    : `Versão ${latest.tag.replace(/^v/, '')}.`
+  : ''
 
 // Antes e depois: a mesma captura (dados fictícios) em três estados, gerados pelo motor do vídeo
 const steps = [
@@ -64,7 +73,7 @@ const presets = [
 
 <Base
   title="ArcanShot — captura de tela com anotações para Windows"
-  description="Capture, anote e compartilhe a sua tela em segundos. Gratuito, de código aberto e 100% local."
+  description="Captura de tela para Windows: do PrintScreen ao chat em segundos, com anotações, desfoque e acabamento pronto para compartilhar. Gratuito, de código aberto e 100% local."
 >
   <link slot="head" rel="preload" as="image" href="/shots/screen.webp" fetchpriority="high" />
 
@@ -96,7 +105,7 @@ const presets = [
           <span>Compartilhe.</span>
         </h1>
         <p class="lead">
-          Captura de tela para Windows: selecione, anote, desfoque o que é privado e cole onde quiser. Tudo fica no seu computador.
+          Captura de tela para Windows, do PrintScreen ao chat em segundos. Anote, desfoque o que é privado e deixe o print pronto para compartilhar. Tudo fica no seu computador.
         </p>
       </div>
 
@@ -105,19 +114,15 @@ const presets = [
           <Selection tone="dark" class="hero-drag" />
         </div>
         <div class="toolbar" role="group" aria-label="Baixar e conhecer o ArcanShot">
-          <a class="tb-btn tb-btn--primary" href={DOWNLOAD_URL} data-download>
+          <a class="tb-btn tb-btn--primary" href={downloadHref} data-download>
             <Icon name="download" />
             Baixar para Windows
           </a>
           <span class="tb-sep" aria-hidden="true"></span>
           <button class="tb-btn" type="button" data-open-video>
             <Icon name="play" />
-            Assistir
+            Ver o vídeo
           </button>
-          <a class="tb-btn" href={REPO_URL} rel="noopener">
-            <Icon name="github" />
-            GitHub
-          </a>
         </div>
         <p class="meta" data-release-meta>{releaseMeta}</p>
       </div>
@@ -265,7 +270,7 @@ const presets = [
               <span class="step-num">1</span>
               <div>
                 <h3>Baixe o instalador</h3>
-                <p>{latest?.sizeMb ? `${latest.sizeMb} MB, ` : ''}para Windows 10 e 11. <a href={DOWNLOAD_URL} data-download>Baixar agora</a></p>
+                <p>{latest?.sizeMb ? `${latest.sizeMb} MB, ` : ''}para Windows 10 e 11. <a href={downloadHref} data-download>Baixar agora</a></p>
               </div>
             </li>
             <li>
@@ -283,15 +288,18 @@ const presets = [
               </div>
             </li>
           </ol>
-          <a class="text-link" href={RELEASES_URL} rel="noopener">Todas as versões <Icon name="arrow" size={18} /></a>
+          <p class="news-line">
+            {newsHeadline}{' '}
+            <a href={latest?.url ?? RELEASES_URL} rel="noopener">Ver o que mudou</a>
+          </p>
         </div>
 
         <div class="faq" id="perguntas">
           <h3 class="faq-title">Perguntas frequentes</h3>
           <div class="faq-list">
         <details>
-          <summary>O Windows mostrou “O Windows protegeu o computador”. É seguro?</summary>
-          <p>O instalador ainda não tem assinatura digital, então o SmartScreen avisa que o editor é desconhecido. Clique em <strong>Mais informações → Executar assim mesmo</strong>. O código-fonte e o processo de build são públicos no GitHub.</p>
+          <summary>É seguro instalar mesmo com o aviso do Windows?</summary>
+          <p>Sim. O aviso aparece porque o instalador ainda não tem assinatura digital. O código-fonte e o processo que gera cada instalador são públicos no GitHub.</p>
         </details>
         <details>
           <summary>Quanto custa?</summary>
@@ -313,7 +321,7 @@ const presets = [
     <section id="baixar" class="section wrap closer" aria-labelledby="baixar-titulo">
       <Selection class="closer-sel">
         <h2 id="baixar-titulo">Pronto para o próximo print?</h2>
-        <a class="tb-btn tb-btn--primary tb-btn--lg" href={DOWNLOAD_URL} data-download>
+        <a class="tb-btn tb-btn--primary tb-btn--lg" href={downloadHref} data-download>
           <Icon name="download" size={22} />
           Baixar para Windows
         </a>
@@ -359,7 +367,7 @@ const presets = [
             <p class="pix-how">No app do seu banco: <strong>Pix → Ler QR code</strong>, ou <strong>Pix Copia e Cola</strong> com o código abaixo.</p>
             <label for="pix-code">Pix copia e cola</label>
             <div class="copy-row">
-              <input id="pix-code" type="text" readonly value={pix.payload} />
+              <textarea id="pix-code" readonly rows="3" spellcheck="false">{pix.payload}</textarea>
               <button class="tb-btn tb-btn--ghost" type="button" data-copy="#pix-code"><Icon name="copy" size={18} /> Copiar</button>
             </div>
             <p class="small" aria-live="polite" data-copy-status></p>
@@ -372,7 +380,7 @@ const presets = [
 
   <footer class="footer wrap">
     <span>ArcanShot · MIT · feito por <a href="https://github.com/imfarias" rel="noopener">Vinicius Farias</a></span>
-    <span><a href={RELEASES_URL} rel="noopener">Todas as versões</a> · <a href="/apresentacao/">Apresentação interativa</a> · <a href={REPO_URL} rel="noopener">Código-fonte</a></span>
+    <span><a href="/apresentacao/">Apresentação interativa</a></span>
   </footer>
 
   <dialog class="video-dialog" data-video-dialog aria-label="Vídeo de apresentação do ArcanShot">
@@ -380,9 +388,17 @@ const presets = [
       <span>Apresentação do ArcanShot · 56 s</span>
       <button class="tb-btn tb-btn--icon" type="button" data-close-video aria-label="Fechar"><Icon name="close" /></button>
     </div>
-    <video controls preload="none" playsinline poster="/shots/beautified.webp">
+    <video controls preload="none" playsinline poster="/shots/beautified.webp" data-video>
       <source src="/media/arcanshot-promo.webm" type="video/webm" />
       <source src="/media/arcanshot-promo.mp4" type="video/mp4" />
+      <track kind="captions" src="/media/arcanshot-promo.vtt" srclang="pt-BR" label="Português" />
     </video>
+    <div class="video-error" role="alert" data-video-error hidden>
+      <p><strong>Não foi possível carregar o vídeo.</strong> Pode ser a conexão. Tente de novo, ou veja a apresentação interativa, que roda direto no navegador.</p>
+      <div class="video-error-actions">
+        <button class="tb-btn tb-btn--ghost" type="button" data-video-retry>Tentar de novo</button>
+        <a class="tb-btn tb-btn--ghost" href="/apresentacao/">Abrir a apresentação interativa</a>
+      </div>
+    </div>
   </dialog>
 </Base>

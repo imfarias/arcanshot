@@ -122,8 +122,35 @@ async function renderVideo({ name, captions, audio, from = 0, to, crf, posterAt 
   }
 }
 
+// Legendas WebVTT do vídeo completo, com os mesmos tempos das legendas gravadas na imagem
+// (drawCaption em promo.js: da narração −0,15 s até o fim dela, no mínimo 2,5 s, +0,35 s)
+const vttTime = (t) => {
+  const ms = Math.max(0, Math.round(t * 1000))
+  const p = (n, w = 2) => String(n).padStart(w, '0')
+  return `${p(Math.floor(ms / 3600000))}:${p(Math.floor(ms / 60000) % 60)}:${p(Math.floor(ms / 1000) % 60)}.${p(ms % 1000, 3)}`
+}
+async function writeVtt() {
+  const page = await openPage(true)
+  const scenes = await page.evaluate(() =>
+    window.promo.timeline.scenes.map(({ start, narrStart, narrDur, caption }) => ({ start, narrStart, narrDur, caption }))
+  )
+  await page.close()
+  const cues = scenes
+    .filter((s) => s.caption)
+    .map((s, i) => {
+      const a = s.start + s.narrStart - 0.15
+      const b = s.start + s.narrStart + Math.max(s.narrDur, 2.5) + 0.35
+      return `${i + 1}\n${vttTime(a)} --> ${vttTime(b)}\n${s.caption}`
+    })
+  const file = join(dist, 'arcanshot-promo.vtt')
+  writeFileSync(file, `WEBVTT\n\n${cues.join('\n\n')}\n`)
+  console.log(`[legendas] ${cues.length} trechos → ${file}`)
+}
+
 try {
-  if (args.includes('--site-shots')) {
+  if (args.includes('--captions')) {
+    await writeVtt()
+  } else if (args.includes('--site-shots')) {
     // imagens do site: WebP p/ a página, PNG p/ o og:image
     const out = resolve(root, '../web/public/shots')
     mkdirSync(out, { recursive: true })
@@ -148,7 +175,10 @@ try {
     )
     console.log(tl.join('  '))
   } else {
-    if (!only || only === 'promo') await renderVideo({ name: 'arcanshot-promo', captions: true, audio: true, crf: 18 })
+    if (!only || only === 'promo') {
+      await renderVideo({ name: 'arcanshot-promo', captions: true, audio: true, crf: 18 })
+      await writeVtt()
+    }
     if (!only || only === 'hero') {
       // loop do hero: só a demonstração do produto (seleção → compartilhar), sem texto
       const page = await openPage(false)
