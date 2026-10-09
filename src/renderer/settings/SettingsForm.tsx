@@ -3,6 +3,7 @@ import type { FormEvent, ReactNode } from 'react'
 import type { AppSettings, FieldErrors } from '@shared/types'
 import { validateSettings } from '@shared/settings'
 import { formatFilename } from '@shared/filenamePattern'
+import { Icon } from '../shared/Icon'
 import { HotkeyInput } from './HotkeyInput'
 
 type Status = 'loading' | 'ready' | 'saving' | 'saved' | 'error'
@@ -91,14 +92,14 @@ export function SettingsForm(): ReactNode {
 
   if (status === 'loading') {
     return (
-      <p data-testid="settings-loading" role="status">
+      <p className="page-state" data-testid="settings-loading" role="status">
         Carregando configurações…
       </p>
     )
   }
   if (!settings) {
     return (
-      <p data-testid="settings-global-error" role="alert">
+      <p className="page-state field-error" data-testid="settings-global-error" role="alert">
         {globalError}
       </p>
     )
@@ -123,235 +124,271 @@ export function SettingsForm(): ReactNode {
       onSubmit={(e) => void handleSubmit(e)}
       noValidate
     >
-      <h1>Configurações</h1>
+      <header className="page-head">
+        <h1>Configurações</h1>
+      </header>
 
-      <fieldset>
-        <legend>Salvamento</legend>
+      <section className="group" aria-labelledby="group-save">
+        <div className="group-head">
+          <h2 id="group-save">Salvamento</h2>
+          <p>Onde cada captura vira arquivo e com que nome.</p>
+        </div>
 
-        <div className="field">
-          <label htmlFor="saveDir">Pasta padrão para salvar</label>
-          <div className="row">
+        <div className="group-body">
+          <div className="field">
+            <label htmlFor="saveDir">Pasta padrão para salvar</label>
+            <div className="row">
+              <input
+                id="saveDir"
+                className="is-mono"
+                data-testid="settings-save-dir"
+                type="text"
+                readOnly
+                value={settings.saveDir}
+                title={settings.saveDir}
+                aria-describedby={errors.saveDir ? 'saveDir-error' : undefined}
+                aria-invalid={!!errors.saveDir}
+              />
+              <button
+                type="button"
+                className="btn-secondary"
+                data-testid="settings-pick-dir"
+                aria-label="Escolher pasta"
+                onClick={() => void handlePickDir()}
+              >
+                <Icon name="folder" size={18} />
+                Escolher…
+              </button>
+            </div>
+            {fieldError('saveDir')}
+          </div>
+
+          <div className="field">
+            <label htmlFor="filenamePattern">Nome padrão do arquivo</label>
             <input
-              id="saveDir"
-              data-testid="settings-save-dir"
+              id="filenamePattern"
+              className="is-mono"
+              data-testid="settings-filename-pattern"
               type="text"
-              readOnly
-              value={settings.saveDir}
-              aria-describedby={errors.saveDir ? 'saveDir-error' : undefined}
-              aria-invalid={!!errors.saveDir}
+              maxLength={120}
+              value={settings.filenamePattern}
+              onChange={(e) => update('filenamePattern', e.target.value)}
+              aria-describedby={
+                'filenamePattern-help' + (errors.filenamePattern ? ' filenamePattern-error' : '')
+              }
+              aria-invalid={!!errors.filenamePattern}
             />
-            <button
-              type="button"
-              data-testid="settings-pick-dir"
-              aria-label="Escolher pasta"
-              onClick={() => void handlePickDir()}
-            >
-              Escolher…
-            </button>
-          </div>
-          {fieldError('saveDir')}
-        </div>
-
-        <div className="field">
-          <label htmlFor="filenamePattern">Nome padrão do arquivo</label>
-          <input
-            id="filenamePattern"
-            data-testid="settings-filename-pattern"
-            type="text"
-            maxLength={120}
-            value={settings.filenamePattern}
-            onChange={(e) => update('filenamePattern', e.target.value)}
-            aria-describedby={
-              'filenamePattern-help' + (errors.filenamePattern ? ' filenamePattern-error' : '')
-            }
-            aria-invalid={!!errors.filenamePattern}
-          />
-          <p className="help" id="filenamePattern-help">
-            Tokens: %Y ano · %m mês · %d dia · %H hora · %M minuto · %S segundo
-          </p>
-          <p className="preview" role="status" data-testid="settings-filename-preview">
-            Exemplo: {preview}.{settings.imageFormat}
-          </p>
-          {fieldError('filenamePattern')}
-        </div>
-
-        <div className="row">
-          <div className="field">
-            <label htmlFor="imageFormat">Formato da imagem</label>
-            <select
-              id="imageFormat"
-              data-testid="settings-image-format"
-              value={settings.imageFormat}
-              onChange={(e) => update('imageFormat', e.target.value as 'png' | 'jpg')}
-            >
-              <option value="png">PNG (sem perda)</option>
-              <option value="jpg">JPG</option>
-            </select>
+            <p className="help" id="filenamePattern-help">
+              <code>%Y</code> ano · <code>%m</code> mês · <code>%d</code> dia · <code>%H</code> hora ·{' '}
+              <code>%M</code> minuto · <code>%S</code> segundo
+            </p>
+            <p className="preview" role="status" data-testid="settings-filename-preview">
+              Exemplo: <code>{preview}.{settings.imageFormat}</code>
+            </p>
+            {fieldError('filenamePattern')}
           </div>
 
-          <div className="field">
-            <label htmlFor="jpgQuality">Qualidade JPG (1–100)</label>
+          <div className="row">
+            <div className="field">
+              <label htmlFor="imageFormat">Formato da imagem</label>
+              <select
+                id="imageFormat"
+                data-testid="settings-image-format"
+                value={settings.imageFormat}
+                onChange={(e) => update('imageFormat', e.target.value as 'png' | 'jpg')}
+              >
+                <option value="png">PNG (sem perda)</option>
+                <option value="jpg">JPG</option>
+              </select>
+            </div>
+
+            <div className="field">
+              <label htmlFor="jpgQuality">Qualidade JPG (1–100)</label>
+              <input
+                id="jpgQuality"
+                className="is-mono"
+                data-testid="settings-jpg-quality"
+                type="number"
+                min={1}
+                max={100}
+                disabled={settings.imageFormat !== 'jpg'}
+                value={settings.jpgQuality}
+                onChange={(e) => update('jpgQuality', Number(e.target.value))}
+                aria-describedby={errors.jpgQuality ? 'jpgQuality-error' : undefined}
+                aria-invalid={!!errors.jpgQuality}
+              />
+              {fieldError('jpgQuality')}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="group" aria-labelledby="group-keys">
+        <div className="group-head">
+          <h2 id="group-keys">Atalhos globais</h2>
+          <p>Funcionam em qualquer programa. Clique no campo e pressione a nova combinação.</p>
+        </div>
+
+        <div className="group-body keys">
+          <div className="field field-key">
+            <label htmlFor="hotkeyArea">Capturar área</label>
+            <HotkeyInput
+              id="hotkeyArea"
+              data-testid="settings-hotkey-area"
+              value={settings.hotkeyArea}
+              onChange={(v) => update('hotkeyArea', v)}
+              aria-describedby={errors.hotkeyArea ? 'hotkeyArea-error' : undefined}
+              aria-invalid={!!errors.hotkeyArea}
+            />
+            {fieldError('hotkeyArea')}
+          </div>
+
+          <div className="field field-key">
+            <label htmlFor="hotkeyFull">Capturar tela atual</label>
+            <HotkeyInput
+              id="hotkeyFull"
+              data-testid="settings-hotkey-full"
+              value={settings.hotkeyFull}
+              onChange={(v) => update('hotkeyFull', v)}
+              aria-describedby={errors.hotkeyFull ? 'hotkeyFull-error' : undefined}
+              aria-invalid={!!errors.hotkeyFull}
+            />
+            {fieldError('hotkeyFull')}
+          </div>
+
+          <div className="field field-key">
+            <label htmlFor="hotkeyAll">Capturar todos os monitores</label>
+            <HotkeyInput
+              id="hotkeyAll"
+              data-testid="settings-hotkey-all"
+              value={settings.hotkeyAll}
+              onChange={(v) => update('hotkeyAll', v)}
+              aria-describedby={errors.hotkeyAll ? 'hotkeyAll-error' : undefined}
+              aria-invalid={!!errors.hotkeyAll}
+            />
+            {fieldError('hotkeyAll')}
+          </div>
+        </div>
+      </section>
+
+      <section className="group" aria-labelledby="group-behavior">
+        <div className="group-head">
+          <h2 id="group-behavior">Comportamento</h2>
+          <p>Inicialização, atualizações e avisos.</p>
+        </div>
+
+        <div className="group-body">
+          <div className="field checkbox">
             <input
-              id="jpgQuality"
-              data-testid="settings-jpg-quality"
-              type="number"
-              min={1}
-              max={100}
-              disabled={settings.imageFormat !== 'jpg'}
-              value={settings.jpgQuality}
-              onChange={(e) => update('jpgQuality', Number(e.target.value))}
-              aria-describedby={errors.jpgQuality ? 'jpgQuality-error' : undefined}
-              aria-invalid={!!errors.jpgQuality}
+              id="launchOnStartup"
+              data-testid="settings-launch-on-startup"
+              type="checkbox"
+              checked={settings.launchOnStartup}
+              onChange={(e) => update('launchOnStartup', e.target.checked)}
             />
-            {fieldError('jpgQuality')}
+            <label htmlFor="launchOnStartup">Iniciar com o Windows</label>
+          </div>
+
+          <div className="field checkbox">
+            <input
+              id="updateCheckOnStartup"
+              data-testid="settings-update-check"
+              type="checkbox"
+              checked={settings.updateCheckOnStartup}
+              onChange={(e) => update('updateCheckOnStartup', e.target.checked)}
+            />
+            <label htmlFor="updateCheckOnStartup">
+              Verificar atualizações ao iniciar e avisar quando houver versão nova
+            </label>
+          </div>
+
+          <div className="field checkbox is-nested">
+            <input
+              id="updateAutoInstall"
+              data-testid="settings-update-auto-install"
+              type="checkbox"
+              checked={settings.updateAutoInstall}
+              disabled={!settings.updateCheckOnStartup}
+              aria-describedby="updateAutoInstall-help"
+              onChange={(e) => update('updateAutoInstall', e.target.checked)}
+            />
+            <label htmlFor="updateAutoInstall">Baixar e instalar atualizações automaticamente</label>
+            <span id="updateAutoInstall-help" className="help">
+              A versão nova é baixada em segundo plano e instalada quando você sair do ArcanShot.
+            </span>
+          </div>
+
+          <div className="field checkbox">
+            <input
+              id="copyOnSave"
+              data-testid="settings-copy-on-save"
+              type="checkbox"
+              checked={settings.copyOnSave}
+              onChange={(e) => update('copyOnSave', e.target.checked)}
+            />
+            <label htmlFor="copyOnSave">Copiar para o clipboard ao salvar</label>
+          </div>
+
+          <div className="field checkbox">
+            <input
+              id="showNotifications"
+              data-testid="settings-show-notifications"
+              type="checkbox"
+              checked={settings.showNotifications}
+              onChange={(e) => update('showNotifications', e.target.checked)}
+            />
+            <label htmlFor="showNotifications">Exibir notificações</label>
+          </div>
+
+          <div className="field field-number">
+            <label htmlFor="sequenceTimeoutSec">Tempo entre prints na sequência (segundos)</label>
+            <input
+              id="sequenceTimeoutSec"
+              className="is-mono"
+              data-testid="settings-sequenceTimeoutSec"
+              type="number"
+              min={2}
+              max={60}
+              value={settings.sequenceTimeoutSec}
+              onChange={(e) => update('sequenceTimeoutSec', Number(e.target.value))}
+              aria-describedby={
+                'sequenceTimeoutSec-help' +
+                (errors.sequenceTimeoutSec ? ' sequenceTimeoutSec-error' : '')
+              }
+              aria-invalid={!!errors.sequenceTimeoutSec}
+            />
+            <p className="help" id="sequenceTimeoutSec-help">
+              Após tirar um print, aguarda esse tempo antes de abrir a galeria com todos os prints da sessão.
+            </p>
+            {fieldError('sequenceTimeoutSec')}
           </div>
         </div>
-      </fieldset>
+      </section>
 
-      <fieldset>
-        <legend>Atalhos globais</legend>
-
-        <div className="field">
-          <label htmlFor="hotkeyArea">Capturar área</label>
-          <HotkeyInput
-            id="hotkeyArea"
-            data-testid="settings-hotkey-area"
-            value={settings.hotkeyArea}
-            onChange={(v) => update('hotkeyArea', v)}
-            aria-describedby={errors.hotkeyArea ? 'hotkeyArea-error' : undefined}
-            aria-invalid={!!errors.hotkeyArea}
-          />
-          {fieldError('hotkeyArea')}
+      <div className="savebar">
+        <div className="savebar-inner">
+          <div className="savebar-status">
+            {globalError && (
+              <p className="field-error" role="alert" data-testid="settings-global-error">
+                {globalError}
+              </p>
+            )}
+            {status === 'saved' && (
+              <p className="success" role="status" data-testid="settings-success">
+                <Icon name="check" size={18} />
+                Configurações salvas
+              </p>
+            )}
+          </div>
+          <button
+            type="submit"
+            className="bar-btn is-primary"
+            data-testid="settings-save"
+            disabled={status === 'saving'}
+          >
+            {status === 'saving' ? 'Salvando…' : 'Salvar'}
+          </button>
         </div>
-
-        <div className="field">
-          <label htmlFor="hotkeyFull">Capturar tela atual</label>
-          <HotkeyInput
-            id="hotkeyFull"
-            data-testid="settings-hotkey-full"
-            value={settings.hotkeyFull}
-            onChange={(v) => update('hotkeyFull', v)}
-            aria-describedby={errors.hotkeyFull ? 'hotkeyFull-error' : undefined}
-            aria-invalid={!!errors.hotkeyFull}
-          />
-          {fieldError('hotkeyFull')}
-        </div>
-
-        <div className="field">
-          <label htmlFor="hotkeyAll">Capturar todos os monitores</label>
-          <HotkeyInput
-            id="hotkeyAll"
-            data-testid="settings-hotkey-all"
-            value={settings.hotkeyAll}
-            onChange={(v) => update('hotkeyAll', v)}
-            aria-describedby={errors.hotkeyAll ? 'hotkeyAll-error' : undefined}
-            aria-invalid={!!errors.hotkeyAll}
-          />
-          {fieldError('hotkeyAll')}
-        </div>
-      </fieldset>
-
-      <fieldset>
-        <legend>Comportamento</legend>
-
-        <div className="field checkbox">
-          <input
-            id="launchOnStartup"
-            data-testid="settings-launch-on-startup"
-            type="checkbox"
-            checked={settings.launchOnStartup}
-            onChange={(e) => update('launchOnStartup', e.target.checked)}
-          />
-          <label htmlFor="launchOnStartup">Iniciar com o Windows</label>
-        </div>
-
-        <div className="field checkbox">
-          <input
-            id="updateCheckOnStartup"
-            data-testid="settings-update-check"
-            type="checkbox"
-            checked={settings.updateCheckOnStartup}
-            onChange={(e) => update('updateCheckOnStartup', e.target.checked)}
-          />
-          <label htmlFor="updateCheckOnStartup">Verificar atualizações ao iniciar e avisar quando houver versão nova</label>
-        </div>
-
-        <div className="field checkbox">
-          <input
-            id="updateAutoInstall"
-            data-testid="settings-update-auto-install"
-            type="checkbox"
-            checked={settings.updateAutoInstall}
-            disabled={!settings.updateCheckOnStartup}
-            aria-describedby="updateAutoInstall-help"
-            onChange={(e) => update('updateAutoInstall', e.target.checked)}
-          />
-          <label htmlFor="updateAutoInstall">Baixar e instalar atualizações automaticamente</label>
-          <span id="updateAutoInstall-help" className="help">
-            A versão nova é baixada em segundo plano e instalada quando você sair do ArcanShot.
-          </span>
-        </div>
-
-        <div className="field checkbox">
-          <input
-            id="copyOnSave"
-            data-testid="settings-copy-on-save"
-            type="checkbox"
-            checked={settings.copyOnSave}
-            onChange={(e) => update('copyOnSave', e.target.checked)}
-          />
-          <label htmlFor="copyOnSave">Copiar para o clipboard ao salvar</label>
-        </div>
-
-        <div className="field checkbox">
-          <input
-            id="showNotifications"
-            data-testid="settings-show-notifications"
-            type="checkbox"
-            checked={settings.showNotifications}
-            onChange={(e) => update('showNotifications', e.target.checked)}
-          />
-          <label htmlFor="showNotifications">Exibir notificações</label>
-        </div>
-
-        <div className="field">
-          <label htmlFor="sequenceTimeoutSec">Tempo entre prints na sequência (segundos)</label>
-          <input
-            id="sequenceTimeoutSec"
-            data-testid="settings-sequenceTimeoutSec"
-            type="number"
-            min={2}
-            max={60}
-            value={settings.sequenceTimeoutSec}
-            onChange={(e) => update('sequenceTimeoutSec', Number(e.target.value))}
-            aria-describedby={
-              'sequenceTimeoutSec-help' +
-              (errors.sequenceTimeoutSec ? ' sequenceTimeoutSec-error' : '')
-            }
-            aria-invalid={!!errors.sequenceTimeoutSec}
-          />
-          <p className="help" id="sequenceTimeoutSec-help">
-            Após tirar um print, aguarda esse tempo antes de abrir a galeria com todos os prints da sessão.
-          </p>
-          {fieldError('sequenceTimeoutSec')}
-        </div>
-      </fieldset>
-
-      {globalError && (
-        <p className="field-error" role="alert" data-testid="settings-global-error">
-          {globalError}
-        </p>
-      )}
-      {status === 'saved' && (
-        <p className="success" role="status" data-testid="settings-success">
-          Configurações salvas
-        </p>
-      )}
-
-      <div className="actions">
-        <button type="submit" data-testid="settings-save" disabled={status === 'saving'}>
-          {status === 'saving' ? 'Salvando…' : 'Salvar'}
-        </button>
       </div>
     </form>
   )

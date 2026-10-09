@@ -1,0 +1,147 @@
+/*
+ * O mesmo mundo do site (DESIGN.md, "o site como uma captura"): fundo é o véu do overlay,
+ * o chrome é o da barra de ferramentas, azul seleciona e age, vermelho anota.
+ * Importado pelas três janelas do app.
+ */
+@import '@fontsource-variable/bricolage-grotesque/opsz.css';
+
+:root {
+  --veil: #0f0f13;
+  --rule: #26262e;
+  --chrome: #18181b;
+  --chrome-line: #3f3f46;
+  --chrome-line-2: #52525b;
+  --chrome-text: #e4e4e7;
+  --on-veil: #ececf1;
+  --on-veil-2: #c4c4cc;
+  --muted: #a1a1aa;
+  --paper: #f8fafc;
+  --paper-white: #ffffff;
+  --ink: #0f172a;
+  --key-line: #cbd5e1;
+  --select: #2563eb;
+  --select-hover: #1d4ed8;
+  --select-soft: #93c5fd;
+  --mark: #ef4444;
+  --mark-soft: #f87171;
+  --size-label-bg: rgba(17, 17, 17, 0.9);
+
+  --font-display: 'Bricolage Grotesque Variable', 'Segoe UI Variable Display', 'Segoe UI', sans-serif;
+  --font-body: 'Segoe UI Variable Text', 'Segoe UI', system-ui, sans-serif;
+  --font-mono: 'Cascadia Mono', 'Cascadia Code', Consolas, ui-monospace, monospace;
+
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --bar-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+
+  color-scheme: dark;
+  accent-color: var(--select);
+}
+
+::selection {
+  background: rgba(37, 99, 235, 0.55);
+  color: #fff;
+}
+
+/* foco = o tracejado da seleção */
+:focus-visible {
+  outline: 2px dashed #fff;
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+::-webkit-scrollbar-track {
+  background: var(--veil);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--chrome-line);
+  border: 3px solid var(--veil);
+  border-radius: 6px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--chrome-line-2);
+}
+
+/* ── barra de ferramentas: o chrome do editor, também usado como barra de ações ── */
+.bar {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px;
+  background: rgba(24, 24, 27, 0.96);
+  border: 1px solid var(--chrome-line);
+  border-radius: 12px;
+  box-shadow: var(--bar-shadow);
+}
+
+.bar-sep {
+  flex: none;
+  width: 1px;
+  height: 24px;
+  margin: 0 4px;
+  background: var(--chrome-line);
+}
+
+.bar-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 36px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--chrome-text);
+  font: 600 0.88rem/1 var(--font-body);
+  white-space: nowrap;
+  cursor: pointer;
+  transition:
+    background-color 160ms ease-out,
+    color 160ms ease-out;
+}
+.bar-btn:hover:not(:disabled) {
+  background: var(--chrome-line);
+  color: #fff;
+}
+.bar-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.bar-btn.is-primary {
+  background: var(--select);
+  color: #fff;
+}
+.bar-btn.is-primary:hover:not(:disabled) {
+  background: var(--select-hover);
+}
+.bar-btn.is-primary:disabled {
+  cursor: wait;
+}
+.bar-btn svg {
+  flex: none;
+}
+
+/* etiqueta de medida da moldura de seleção */
+.size-label {
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: var(--size-label-bg);
+  color: #fff;
+  font: 600 0.75rem/1 var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0s !important;
+    animation-duration: 0s !important;
+  }
+}

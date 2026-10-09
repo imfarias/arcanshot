@@ -78,6 +78,8 @@ export function openGalleryWindow(items: GalleryItem[], settings: AppSettings): 
     minWidth: 600,
     minHeight: 400,
     title: `ArcanShot — ${items.length} capturas na sequência`,
+    // o véu do DESIGN.md: sem clarão branco antes do primeiro paint
+    backgroundColor: '#0f0f13',
     autoHideMenuBar: true,
     show: false,
     webPreferences: {

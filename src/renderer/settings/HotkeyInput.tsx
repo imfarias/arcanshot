@@ -87,6 +87,7 @@ export function HotkeyInput(props: HotkeyInputProps): ReactNode {
       aria-describedby={props['aria-describedby']}
       aria-invalid={props['aria-invalid']}
       data-testid={props['data-testid']}
+      data-capturing={capturing || undefined}
       onFocus={() => setCapturing(true)}
       onBlur={() => setCapturing(false)}
       onKeyDown={handleKeyDown}

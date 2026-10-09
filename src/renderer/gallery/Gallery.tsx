@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import type { ReactNode } from 'react'
 import type { GalleryInitData, GalleryItem } from '@shared/types'
+import { Icon } from '../shared/Icon'
 import './gallery.css'
 
 type FeedbackState = { kind: 'success'; message: string } | { kind: 'error'; message: string } | null
@@ -10,6 +11,8 @@ export function Gallery(): ReactNode {
   const [busy, setBusy] = useState(false)
   const [feedback, setFeedback] = useState<FeedbackState>(null)
   const [selected, setSelected] = useState<Set<number>>(() => new Set())
+  // tamanho real de cada captura, para a etiqueta da moldura de seleção
+  const [sizes, setSizes] = useState<Record<number, string>>({})
 
   useEffect(() => {
     void window.arcanshot.galleryInit().then((d) => {
@@ -113,9 +116,12 @@ export function Gallery(): ReactNode {
   return (
     <main className="gallery-root" aria-label="Galeria de capturas">
       <header className="gallery-header">
-        <h1>
-          {count} {count === 1 ? 'captura' : 'capturas'} na sequência
-        </h1>
+        <div>
+          <h1>
+            {count} {count === 1 ? 'captura' : 'capturas'} na sequência
+          </h1>
+          <p className="gallery-hint">Clique para selecionar. Arraste para soltar em outro programa.</p>
+        </div>
         <div className="gallery-header-actions">
           <button
             className="gallery-btn-text"
@@ -153,10 +159,23 @@ export function Gallery(): ReactNode {
                 alt={`Captura ${item.index}`}
                 draggable={false}
                 onClick={() => toggleSelect(item.index)}
+                onLoad={(e) => {
+                  const { naturalWidth: w, naturalHeight: h } = e.currentTarget
+                  setSizes((prev) => ({ ...prev, [item.index]: `${w} × ${h}` }))
+                }}
               />
               <span className="gallery-item-badge" aria-hidden="true">
                 {item.index}
               </span>
+              {selected.has(item.index) && (
+                <span className="sel-frame" aria-hidden="true">
+                  <i className="h-tl" />
+                  <i className="h-tr" />
+                  <i className="h-bl" />
+                  <i className="h-br" />
+                  {sizes[item.index] && <span className="size-label">{sizes[item.index]}</span>}
+                </span>
+              )}
             </li>
           ))}
         </ul>
@@ -164,57 +183,66 @@ export function Gallery(): ReactNode {
 
       <footer className="gallery-footer">
         <div className="gallery-footer-left">
-          <button
-            className="gallery-btn gallery-btn-edit"
-            data-testid="gallery-btn-edit"
-            disabled={selectedCount !== 1}
-            onClick={handleEdit}
-            aria-label="Editar captura selecionada no overlay"
-          >
-            Editar
-          </button>
-          {selectedCount > 0 && (
-            <span className="gallery-selection-count" aria-live="polite">
-              {selectedCount} {selectedCount === 1 ? 'selecionada' : 'selecionadas'}
-            </span>
-          )}
-        </div>
-
-        <div className="gallery-footer-right">
-          {feedback && (
+          {feedback ? (
             <span
               className={`gallery-feedback gallery-feedback--${feedback.kind}`}
               role="status"
               aria-live="polite"
               data-testid="gallery-feedback"
             >
+              {feedback.kind === 'success' && <Icon name="check" size={18} />}
               {feedback.message}
             </span>
+          ) : (
+            <span className="gallery-selection-count" aria-live="polite">
+              {selectedCount > 0
+                ? `${selectedCount} ${selectedCount === 1 ? 'selecionada' : 'selecionadas'}`
+                : ''}
+            </span>
           )}
+        </div>
+
+        <div className="bar gallery-bar">
           <button
-            className="gallery-btn gallery-btn-primary"
+            className="bar-btn"
+            data-testid="gallery-btn-edit"
+            disabled={selectedCount !== 1}
+            onClick={handleEdit}
+            aria-label="Editar captura selecionada no overlay"
+            title={selectedCount === 1 ? undefined : 'Selecione uma captura para editar'}
+          >
+            <Icon name="pencil" size={18} />
+            Editar
+          </button>
+          <span className="bar-sep" aria-hidden="true" />
+          <button
+            className="bar-btn is-primary"
             data-testid="gallery-btn-save-all"
             disabled={busy}
             onClick={() => void handleSaveAll()}
             aria-label="Salvar todas as capturas em uma pasta"
           >
+            <Icon name="save" size={18} />
             Salvar todas
           </button>
           <button
-            className="gallery-btn gallery-btn-secondary"
+            className="bar-btn"
             data-testid="gallery-btn-export-pdf"
             disabled={busy}
             onClick={() => void handleExportPdf()}
             aria-label="Exportar todas as capturas como PDF"
           >
+            <Icon name="file" size={18} />
             Gerar PDF
           </button>
+          <span className="bar-sep" aria-hidden="true" />
           <button
-            className="gallery-btn gallery-btn-close"
+            className="bar-btn"
             data-testid="gallery-btn-close"
             onClick={() => void handleClose()}
             aria-label="Fechar galeria"
           >
+            <Icon name="close" size={18} />
             Fechar
           </button>
         </div>

@@ -302,6 +302,15 @@ Uma curva só: ease-out exponencial `cubic-bezier(0.16, 1, 0.3, 1)` (no JS, `1 -
 - **Estados:** 160–200ms em cor de fundo, cor e borda; seta do FAQ gira em 200ms.
 - **Reduced motion:** sem entrada, sem avanço automático, transições zeradas, rolagem sem suavização. Sem JS, a tela cobre o hero escurecida e a área iluminada não aparece.
 
+## Aplicativo
+
+As janelas do app usam o mesmo mundo, em modo de operação: densidade de ferramenta, nada de vitrine. Tokens, foco, `::selection`, scrollbar, a barra (`.bar`, `.bar-btn`) e a etiqueta de medida (`.size-label`) vivem em `src/renderer/shared/theme.css`; os ícones em `src/renderer/shared/Icon.tsx` (mesma grade e traço do site). A Bricolage vem do pacote `@fontsource-variable/bricolage-grotesque`, embutida no build.
+
+- **Configurações:** véu, título em display, grupos em duas colunas (título e descrição à esquerda, campos à direita) separados por 1px de Linha do Véu. Campos em Chrome com borda Borda de Chrome; caminhos, padrões e números em mono. Atalhos são teclas (o kbd do site) que viram tracejado azul enquanto escutam a combinação. Rodapé fixo no véu com o botão Salvar em Azul de Seleção.
+- **Galeria:** miniaturas sobre o papel de parede #27272f; a selecionada ganha a moldura de seleção completa (tracejado, alças e a medida real da captura). O número é o círculo de passo, azul quando selecionado. As ações ficam numa barra de ferramentas no rodapé.
+- **Editor:** o véu fora da seleção é `rgba(9, 9, 12, 0.55)` (mais claro que o do site, para não esconder o contexto de quem está recortando), tracejado de 1.5px, alças quadradas com borda azul, medida em mono. Barra com raio 12px, botões de 32px, ícones desenhados (nunca emoji ou glifo Unicode); embelezar ligado deixa o ícone azul com um ponto.
+- Janelas abrem com `backgroundColor: '#0f0f13'` para não piscar branco.
+
 ## Do's and Don'ts
 
 ### Do:
