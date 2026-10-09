@@ -9,10 +9,13 @@ const api: ArcanshotApi = {
   overlayInit: () => ipcRenderer.invoke('overlay:init'),
   beginEdit: () => ipcRenderer.invoke('overlay:begin-edit'),
   cancelOverlay: () => ipcRenderer.invoke('overlay:cancel'),
-  copyImage: (dataUrl: string) => ipcRenderer.invoke('editor:copy', dataUrl),
+  copyImage: (dataUrl: string, background?: string) =>
+    ipcRenderer.invoke('editor:copy', dataUrl, background),
   copyColor: (hex: string) => ipcRenderer.invoke('editor:copy-color', hex),
-  saveImage: (dataUrl: string) => ipcRenderer.invoke('editor:save', dataUrl),
-  saveImageAs: (dataUrl: string) => ipcRenderer.invoke('editor:save-as', dataUrl),
+  saveImage: (dataUrl: string, background?: string) =>
+    ipcRenderer.invoke('editor:save', dataUrl, background),
+  saveImageAs: (dataUrl: string, background?: string) =>
+    ipcRenderer.invoke('editor:save-as', dataUrl, background),
   getVersion: () => ipcRenderer.invoke('app:version'),
   galleryInit: () => ipcRenderer.invoke('gallery:init'),
   gallerySaveAll: () => ipcRenderer.invoke('gallery:save-all'),

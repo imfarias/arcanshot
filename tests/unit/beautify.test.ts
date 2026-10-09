@@ -5,6 +5,7 @@ import {
   beautifyFromSettings,
   computeBeautifyLayout,
   isKnownBackground,
+  pageBackground,
   pickExportFormat,
   resolveBackground,
   validateBeautify
@@ -138,6 +139,25 @@ describe('validateBeautify (CT-BE-15 a CT-BE-17)', () => {
   it('CT-BE-17: aceita parcial válido sem erros', () => {
     expect(validateBeautify({ beautifyBackground: 'ocean', beautifyPadding: 12 })).toEqual({})
     expect(validateBeautify({})).toEqual({})
+  })
+})
+
+describe('pageBackground (0010)', () => {
+  it('CT-PB-01: devolve o preset para fundos sólidos e degradês', () => {
+    expect(pageBackground('violet')?.type).toBe('gradient')
+    expect(pageBackground('graphite')?.colors).toEqual(['#18181b'])
+  })
+
+  it('CT-PB-02: transparente, desconhecido, ausente e de tipo errado não pintam nada', () => {
+    for (const v of ['none', 'arco-iris', undefined, null, 42, {}, '']) {
+      expect(pageBackground(v)).toBeNull()
+    }
+  })
+
+  it('CT-PB-03: todo preset pintável tem cores no formato #rrggbb que o PDF entende', () => {
+    for (const p of BACKGROUND_PRESETS.filter((x) => x.type !== 'none')) {
+      for (const c of p.colors) expect(c).toMatch(/^#[0-9a-f]{6}$/i)
+    }
   })
 })
 

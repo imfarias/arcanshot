@@ -11,8 +11,12 @@ export class CaptureSession {
     private readonly onComplete: (items: GalleryItem[]) => void
   ) {}
 
-  addCapture(dataUrl: string): void {
-    this.buffer.push({ index: this.buffer.length + 1, dataUrl })
+  addCapture(dataUrl: string, background?: string): void {
+    this.buffer.push({
+      index: this.buffer.length + 1,
+      dataUrl,
+      ...(background ? { background } : {})
+    })
 
     if (this.buffer.length >= SESSION_ITEM_LIMIT) {
       this.flush()

@@ -65,6 +65,8 @@ export interface OverlayInitData {
 export interface GalleryItem {
   index: number
   dataUrl: string
+  /** Id do fundo do embelezar aplicado a esta captura; pinta a página no PDF padronizado (0010). */
+  background?: string
 }
 
 export interface GalleryInitData {
@@ -116,11 +118,12 @@ export interface ArcanshotApi {
   overlayInit(): Promise<OverlayInitData>
   beginEdit(): Promise<{ ok: boolean }>
   cancelOverlay(): Promise<{ ok: boolean }>
-  copyImage(dataUrl: string): Promise<{ ok: boolean }>
+  /** `background`: id do fundo do embelezar aplicado à imagem (ausente se sem acabamento). */
+  copyImage(dataUrl: string, background?: string): Promise<{ ok: boolean }>
   /** Copia uma cor `#RRGGBB` como texto. Não fecha o overlay. */
   copyColor(hex: string): Promise<{ ok: boolean; error?: string }>
-  saveImage(dataUrl: string): Promise<SaveResult>
-  saveImageAs(dataUrl: string): Promise<SaveResult>
+  saveImage(dataUrl: string, background?: string): Promise<SaveResult>
+  saveImageAs(dataUrl: string, background?: string): Promise<SaveResult>
   getVersion(): Promise<string>
   galleryInit(): Promise<GalleryInitData>
   gallerySaveAll(): Promise<{ ok: boolean; folder?: string; error?: string }>

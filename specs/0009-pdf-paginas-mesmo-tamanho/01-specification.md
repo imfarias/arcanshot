@@ -72,7 +72,7 @@ Nenhuma mensagem nova. Reaproveita "PDF salvo em {caminho}" e as mensagens de er
 - **RN-01:** com a opção ligada, todas as páginas têm exatamente o mesmo tamanho.
 - **RN-02:** o tamanho da página é o da captura de maior área (largura × altura). Empate: a primeira na ordem da galeria.
 - **RN-03:** o print nunca é ampliado nem distorcido: escala = mín(1, larguraPágina/larguraPrint, alturaPágina/alturaPrint), aplicada igual nos dois eixos.
-- **RN-04:** o print é centralizado na página nos dois eixos; o espaço restante é branco.
+- **RN-04:** o print é centralizado na página nos dois eixos; o espaço restante é branco (a partir da 0010, é o fundo do embelezar da própria imagem, quando houver).
 - **RN-05:** a ordem das páginas é a ordem da galeria (inalterada).
 - **RN-06:** a opção vale **só para o PDF**; *Salvar todas* continua gravando as imagens no tamanho original.
 - **RN-07:** opção desligada por padrão; quem já usa o app não vê mudança até optar.

@@ -70,6 +70,16 @@ export function isKnownBackground(id: string): boolean {
   return BACKGROUND_PRESETS.some((p) => p.id === id)
 }
 
+/**
+ * Preset que pinta o fundo da página no PDF (0010), ou null quando não há o que pintar:
+ * id ausente, desconhecido ou transparente. Aceita `unknown` porque o id vem do renderer.
+ */
+export function pageBackground(id: unknown): BackgroundPreset | null {
+  if (typeof id !== 'string') return null
+  const preset = BACKGROUND_PRESETS.find((p) => p.id === id)
+  return preset && preset.type !== 'none' ? preset : null
+}
+
 /** Opções de embelezamento derivadas das settings persistidas. */
 export function beautifyFromSettings(settings: AppSettings): BeautifyOptions {
   return {

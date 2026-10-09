@@ -46,6 +46,8 @@
 - [2026-08-26] [Tester] jsdom não implementa canvas 2D, decodificação de `Image` nem `PointerEvent`. Para testar componentes de canvas: stubar `HTMLCanvasElement.prototype.getContext` **registrando as chamadas** (permite asserção sobre o que foi desenhado), substituir `Image` por uma classe que dispara `onload` em `queueMicrotask`, e aliasar `window.PointerEvent = window.MouseEvent` (senão `fireEvent.pointerDown` perde `clientX`/`clientY`). Ver `tests/renderer/Overlay.test.tsx`.
 - [2026-06-12] [Arquiteto] `globalShortcut.register` pode falhar se outro app já usa a tecla (ex.: PrintScreen com OneDrive) — sempre tratar retorno `false` e informar o usuário.
 
+- [2026-10-09] [Líder] Metadado que só o editor conhece (ex.: o fundo do embelezar aplicado, 0010) viaja **com a captura** (`copyImage/saveImage/saveImageAs(dataUrl, background?)` → `GalleryItem.background`), validado por lista fechada no main — nunca inferido depois pelos pixels nem pela configuração salva (que é do momento atual, não de cada imagem).
+- [2026-10-09] [Dev] Degradê em PDF com pdf-lib: sombreamento axial nativo (`context.obj` + `Resources/Shading` + operador `sh`), não imagem esticada; coordenadas do PDF têm origem embaixo à esquerda, então o eixo canto-a-canto do canvas vira `Coords [0, H, W, 0]`. Para testar, decodificar o conteúdo com `decodePDFRawStream` (o pdf-lib comprime as páginas).
 - [2026-10-09] [Líder] PDF da sequência usa 1 px = 1 pt (desde a 0005): prints grandes viram páginas fisicamente enormes. Tamanho físico (A4/Carta) ficou fora de escopo da 0009.
 ## Glossário do Domínio
 - Overlay: janela frameless em tela cheia que exibe a captura congelada para seleção/edição.

@@ -26,7 +26,7 @@
 | beautify (puro) | `src/shared/beautify.ts` | Presets de fundo, geometria proporcional do acabamento e regra de formato | `BACKGROUND_PRESETS/computeBeautifyLayout/pickExportFormat/validateBeautify/beautifyFromSettings` |
 | beautify (canvas) | `src/renderer/overlay/lib/beautify.ts` | Aplica fundo, sombra e cantos arredondados sobre um recorte | `applyBeautify(canvas, opts)` / `roundRectPath(ctx, ...)` |
 | editor (modelo) | `src/renderer/overlay/lib/editor.ts` | Estado de anotações com undo/redo, render (inclui traço livre e tarja) e export com acabamento opcional | `createEditorState/addAnnotation/undo/redo/drawFreehand/exportSelection` |
-| pdfBuilder | `src/main/pdfBuilder.ts` | PDF da sequência (uma página por captura), com páginas padronizadas opcionais; sem Electron | `planPdfPages(sizes, uniform)` / `buildPdf(dataUrls, { uniformSize })` |
+| pdfBuilder | `src/main/pdfBuilder.ts` | PDF da sequência (uma página por captura), com páginas padronizadas opcionais e sobra pintada com o fundo do embelezar de cada imagem (0010); sem Electron | `planPdfPages(sizes, uniform)` / `buildPdf(inputs: (string \| { dataUrl, background? })[], { uniformSize })` |
 
 ## Hooks / Composables / Mixins
 | Nome | Caminho | Propósito |
