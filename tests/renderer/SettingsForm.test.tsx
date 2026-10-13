@@ -27,6 +27,7 @@ function mockApi(overrides: Partial<ArcanshotApi> = {}): ArcanshotApi {
     copyColor: vi.fn(),
     saveImage: vi.fn(),
     saveImageAs: vi.fn(),
+    ocrImage: vi.fn(),
     getVersion: vi.fn().mockResolvedValue('0.1.0'),
     galleryInit: vi.fn(),
     gallerySaveAll: vi.fn(),

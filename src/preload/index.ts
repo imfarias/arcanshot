@@ -16,6 +16,7 @@ const api: ArcanshotApi = {
     ipcRenderer.invoke('editor:save', dataUrl, background),
   saveImageAs: (dataUrl: string, background?: string) =>
     ipcRenderer.invoke('editor:save-as', dataUrl, background),
+  ocrImage: (dataUrl: string) => ipcRenderer.invoke('editor:ocr', dataUrl),
   getVersion: () => ipcRenderer.invoke('app:version'),
   galleryInit: () => ipcRenderer.invoke('gallery:init'),
   gallerySaveAll: () => ipcRenderer.invoke('gallery:save-all'),

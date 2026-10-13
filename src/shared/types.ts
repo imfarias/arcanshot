@@ -76,6 +76,11 @@ export interface GalleryItem {
   background?: string
 }
 
+/** Resultado do OCR do print (0012). O texto vai direto para o clipboard, no main. */
+export type OcrResult =
+  | { ok: true; chars: number; language: string }
+  | { ok: false; reason: 'empty' | 'unavailable' | 'error'; error?: string }
+
 export interface GalleryInitData {
   items: GalleryItem[]
   settings: AppSettings
@@ -131,6 +136,8 @@ export interface ArcanshotApi {
   copyColor(hex: string): Promise<{ ok: boolean; error?: string }>
   saveImage(dataUrl: string, background?: string): Promise<SaveResult>
   saveImageAs(dataUrl: string, background?: string): Promise<SaveResult>
+  /** Lê o texto da imagem (OCR do Windows) e o copia como texto para o clipboard. */
+  ocrImage(dataUrl: string): Promise<OcrResult>
   getVersion(): Promise<string>
   galleryInit(): Promise<GalleryInitData>
   gallerySaveAll(): Promise<{ ok: boolean; folder?: string; error?: string }>

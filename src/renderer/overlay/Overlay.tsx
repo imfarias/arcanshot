@@ -54,6 +54,31 @@ const BEAUTIFY_SAVE_DEBOUNCE_MS = 400
 
 type Phase = 'loading' | 'select' | 'edit'
 
+/** Estado do OCR (0012) mostrado no aviso do editor. */
+type OcrStatus =
+  | { kind: 'busy' }
+  | { kind: 'ok'; chars: number }
+  | { kind: 'empty' }
+  | { kind: 'unavailable' }
+  | { kind: 'error' }
+
+const OCR_TOAST_MS = 4000
+
+function ocrMessage(s: OcrStatus): string {
+  switch (s.kind) {
+    case 'busy':
+      return 'Lendo o texto da imagem…'
+    case 'ok':
+      return `Texto copiado · ${s.chars} ${s.chars === 1 ? 'caractere' : 'caracteres'}`
+    case 'empty':
+      return 'Nenhum texto encontrado nessa área'
+    case 'unavailable':
+      return 'OCR indisponível: instale um idioma de reconhecimento de texto no Windows'
+    default:
+      return 'Não foi possível ler o texto da imagem'
+  }
+}
+
 type DragState =
   | { type: 'create-selection'; start: Point }
   | { type: 'move-selection'; start: Point; original: Rect }
@@ -93,6 +118,8 @@ export function Overlay(): ReactNode {
   /** Janelas abertas em px de imagem, de cima para baixo (0011). Vazio = recurso indisponível. */
   const [windowsImg, setWindowsImg] = useState<ImageWindow[]>([])
   const [ctrlHeld, setCtrlHeld] = useState(false)
+  const [ocr, setOcr] = useState<OcrStatus | null>(null)
+  const ocrTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const baseCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -285,6 +312,37 @@ export function Overlay(): ReactNode {
     if (dataUrl) void window.arcanshot.saveImageAs(dataUrl, exportedBackground())
   }, [getDataUrl, exportedBackground])
 
+  // OCR (0012): lê o texto da seleção e o copia (no main). O editor continua aberto.
+  // A imagem é a mesma que o "copiar" exportaria, sem o acabamento: a moldura não é texto e
+  // o desfoque/tarja, se houver, continuam escondendo o que a pessoa quis esconder.
+  const handleOcr = useCallback(async (): Promise<void> => {
+    const base = baseCanvasRef.current
+    if (!base || !selection || ocr?.kind === 'busy') return
+    const dataUrl = exportSelection(base, editor.annotations, selection, 'png', 100)
+
+    if (ocrTimerRef.current) clearTimeout(ocrTimerRef.current)
+    setOcr({ kind: 'busy' })
+    let next: OcrStatus
+    try {
+      const r = await window.arcanshot.ocrImage(dataUrl)
+      if (r.ok) next = { kind: 'ok', chars: r.chars }
+      else if (r.reason === 'empty') next = { kind: 'empty' }
+      else if (r.reason === 'unavailable') next = { kind: 'unavailable' }
+      else next = { kind: 'error' }
+    } catch {
+      next = { kind: 'error' }
+    }
+    setOcr(next)
+    ocrTimerRef.current = setTimeout(() => setOcr(null), OCR_TOAST_MS)
+  }, [selection, editor, ocr])
+
+  useEffect(
+    () => () => {
+      if (ocrTimerRef.current) clearTimeout(ocrTimerRef.current)
+    },
+    []
+  )
+
   const handleCancel = useCallback(() => {
     void window.arcanshot.cancelOverlay()
   }, [])
@@ -422,6 +480,9 @@ export function Overlay(): ReactNode {
       if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'c') {
         e.preventDefault()
         handleCopy()
+      } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 'c') {
+        e.preventDefault()
+        void handleOcr()
       } else if (e.ctrlKey && e.shiftKey && e.key.toLowerCase() === 's') {
         e.preventDefault()
         handleSaveAs()
@@ -438,7 +499,7 @@ export function Overlay(): ReactNode {
     }
     window.addEventListener('keydown', onKeyDown)
     return () => window.removeEventListener('keydown', onKeyDown)
-  }, [phase, textPos, handleCopy, handleSave, handleSaveAs, handleCancel])
+  }, [phase, textPos, handleCopy, handleOcr, handleSave, handleSaveAs, handleCancel])
 
   // ---------- mouse ----------
   const toImg = useCallback(
@@ -717,6 +778,17 @@ export function Overlay(): ReactNode {
         </div>
       )}
 
+      {ocr && (
+        <div
+          className="overlay-hint"
+          role="status"
+          data-testid="editor-ocr-status"
+          style={{ left: hintPos.x, top: hintPos.y }}
+        >
+          {ocrMessage(ocr)}
+        </div>
+      )}
+
       {phase === 'select' && !selection && !ctrlHeld && windowsImg.length > 0 && (
         <div
           className="overlay-hint"
@@ -763,6 +835,8 @@ export function Overlay(): ReactNode {
             onUndo={() => setEditor((s) => undo(s))}
             onRedo={() => setEditor((s) => redo(s))}
             onCopy={handleCopy}
+            onOcr={() => void handleOcr()}
+            ocrBusy={ocr?.kind === 'busy'}
             onSave={handleSave}
             onSaveAs={handleSaveAs}
             onCancel={handleCancel}

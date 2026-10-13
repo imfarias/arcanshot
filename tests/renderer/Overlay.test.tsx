@@ -115,6 +115,7 @@ function fakePreload(data: OverlayInitData | null) {
     copyColor: vi.fn().mockResolvedValue({ ok: true }),
     saveImage: vi.fn().mockResolvedValue({ ok: true }),
     saveImageAs: vi.fn().mockResolvedValue({ ok: true }),
+    ocrImage: vi.fn().mockResolvedValue({ ok: true, chars: 42, language: "pt-BR" }),
     getSettings: vi.fn(),
     saveSettings: vi.fn().mockResolvedValue({ ok: true, settings: null }),
     pickDirectory: vi.fn(),
@@ -830,6 +831,139 @@ describe('Overlay — captura de janela por Ctrl+clique (0011)', () => {
     ctrlDown()
     hover(IN_SHEET)
     await screen.findByTestId('editor-window-label')
+    expect(await axe(container)).toHaveNoViolations()
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 0012 — OCR do print (copiar o texto da imagem)
+// ---------------------------------------------------------------------------
+
+describe('Overlay — OCR do print (0012)', () => {
+  async function editing(
+    ocrImage?: ReturnType<typeof vi.fn>
+  ): Promise<{ api: ReturnType<typeof fakePreload> }> {
+    const { data } = dualAreaInit()
+    const { api } = await renderOverlay(data)
+    if (ocrImage) api.ocrImage = ocrImage as typeof api.ocrImage
+    await enterEditMode()
+    return { api }
+  }
+
+  it('CT-FC-70: o botão lê o texto da seleção, copia e mantém o editor aberto', async () => {
+    const { api } = await editing()
+
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+
+    const status = await screen.findByTestId('editor-ocr-status')
+    await waitFor(() => expect(status).toHaveTextContent('Texto copiado · 42 caracteres'))
+    expect(api.ocrImage).toHaveBeenCalledTimes(1)
+    expect(api.ocrImage.mock.calls[0][0]).toMatch(/^data:image\/png/)
+    // o editor segue de pé: nada foi fechado, copiado como imagem nem salvo
+    expect(api.cancelOverlay).not.toHaveBeenCalled()
+    expect(api.copyImage).not.toHaveBeenCalled()
+    expect(api.saveImage).not.toHaveBeenCalled()
+    expect(screen.getByRole('toolbar')).toBeInTheDocument()
+  })
+
+  it('CT-FC-70b: o OCR lê a imagem sem o acabamento do embelezar', async () => {
+    const { data } = dualAreaInit()
+    const { api } = await renderOverlay({ ...data, settings: settingsFactory.beautified() })
+    await enterEditMode()
+    ctxCalls = []
+
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    await waitFor(() => expect(api.ocrImage).toHaveBeenCalled())
+
+    // sem recorte de cantos arredondados (que só o acabamento faz)
+    expect(ctxCalls.some((c) => c.method === 'clip')).toBe(false)
+  })
+
+  it('CT-FC-71: Ctrl+Shift+C aciona o OCR; Ctrl+C continua copiando a imagem', async () => {
+    const { api } = await editing()
+
+    fireEvent.keyDown(window, { key: 'C', ctrlKey: true, shiftKey: true })
+    await waitFor(() => expect(api.ocrImage).toHaveBeenCalledTimes(1))
+    expect(api.copyImage).not.toHaveBeenCalled()
+
+    fireEvent.keyDown(window, { key: 'c', ctrlKey: true })
+    await waitFor(() => expect(api.copyImage).toHaveBeenCalledTimes(1))
+    expect(api.ocrImage).toHaveBeenCalledTimes(1)
+  })
+
+  it('CT-FC-72: durante a leitura mostra o aviso, desabilita o botão e ignora novo pedido', async () => {
+    let finish: (v: unknown) => void = () => {}
+    const pending = vi.fn().mockReturnValue(new Promise((r) => (finish = r)))
+    await editing(pending)
+
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    expect(await screen.findByTestId('editor-ocr-status')).toHaveTextContent('Lendo o texto')
+    expect(screen.getByTestId('editor-ocr')).toBeDisabled()
+
+    fireEvent.keyDown(window, { key: 'C', ctrlKey: true, shiftKey: true })
+    expect(pending).toHaveBeenCalledTimes(1)
+
+    finish({ ok: true, chars: 1, language: 'pt-BR' })
+    await waitFor(() =>
+      expect(screen.getByTestId('editor-ocr-status')).toHaveTextContent('1 caractere')
+    )
+    expect(screen.getByTestId('editor-ocr')).toBeEnabled()
+  })
+
+  it('CT-FC-73: sem texto na área, avisa e não copia nada', async () => {
+    await editing(vi.fn().mockResolvedValue({ ok: false, reason: 'empty' }))
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    await waitFor(() =>
+      expect(screen.getByTestId('editor-ocr-status')).toHaveTextContent(
+        'Nenhum texto encontrado nessa área'
+      )
+    )
+  })
+
+  it('CT-FC-74: OCR indisponível no Windows explica o que falta', async () => {
+    await editing(vi.fn().mockResolvedValue({ ok: false, reason: 'unavailable' }))
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    await waitFor(() =>
+      expect(screen.getByTestId('editor-ocr-status')).toHaveTextContent(/OCR indisponível/)
+    )
+  })
+
+  it('CT-FC-75: erro do main ou da ponte avisa e o editor continua utilizável', async () => {
+    await editing(vi.fn().mockResolvedValue({ ok: false, reason: 'error', error: 'falhou' }))
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    await waitFor(() =>
+      expect(screen.getByTestId('editor-ocr-status')).toHaveTextContent(/Não foi possível ler/)
+    )
+    expect(screen.getByTestId('editor-ocr')).toBeEnabled()
+  })
+
+  it('CT-FC-75b: a ponte lançando exceção também vira aviso de erro', async () => {
+    await editing(vi.fn().mockRejectedValue(new Error('ipc caiu')))
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    await waitFor(() =>
+      expect(screen.getByTestId('editor-ocr-status')).toHaveTextContent(/Não foi possível ler/)
+    )
+    expect(screen.getByRole('toolbar')).toBeInTheDocument()
+  })
+
+  it('CT-FC-76: o aviso some sozinho depois de alguns segundos', async () => {
+    await editing()
+    fireEvent.click(screen.getByTestId('editor-ocr'))
+    await screen.findByTestId('editor-ocr-status')
+
+    await waitFor(
+      () => expect(screen.queryByTestId('editor-ocr-status')).not.toBeInTheDocument(),
+      { timeout: 6000 }
+    )
+  }, 10_000)
+
+  it('CT-FC-77: sem violações de acessibilidade com o botão e o aviso (axe)', async () => {
+    const { container } = await renderOverlay(dualAreaInit().data).then(async (r) => {
+      await enterEditMode()
+      fireEvent.click(screen.getByTestId('editor-ocr'))
+      await screen.findByTestId('editor-ocr-status')
+      return r
+    })
     expect(await axe(container)).toHaveNoViolations()
   })
 })

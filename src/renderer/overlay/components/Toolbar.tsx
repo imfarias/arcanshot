@@ -41,6 +41,9 @@ export interface ToolbarProps {
   onUndo: () => void
   onRedo: () => void
   onCopy: () => void
+  /** Copia o texto da imagem (OCR, 0012). Sem o callback, o botão não aparece. */
+  onOcr?: () => void
+  ocrBusy?: boolean
   onSave: () => void
   onSaveAs: () => void
   onCancel: () => void
@@ -181,6 +184,19 @@ export function Toolbar(props: ToolbarProps): ReactNode {
             onClick={props.onToggleBeautify}
           >
             <Icon name="beautify" />
+          </button>
+        )}
+        {props.onOcr && (
+          <button
+            type="button"
+            className="action-btn"
+            aria-label="Copiar o texto da imagem (OCR)"
+            title="Copiar texto da imagem (Ctrl+Shift+C)"
+            data-testid="editor-ocr"
+            disabled={props.ocrBusy}
+            onClick={props.onOcr}
+          >
+            <Icon name="ocr" />
           </button>
         )}
         <button

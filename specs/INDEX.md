@@ -12,3 +12,4 @@
 | 0009 | Páginas do PDF com o Mesmo Tamanho | Aprovado | 2026-10-09 |
 | 0010 | Fundo da Página do PDF por Imagem | Aprovado | 2026-10-09 |
 | 0011 | Captura de Janela por Ctrl+clique | Aprovado com ressalvas | 2026-10-13 |
+| 0012 | OCR do Print: Copiar o Texto da Imagem | Aprovado | 2026-10-13 |

@@ -15,6 +15,7 @@ import { formatFilename } from '@shared/filenamePattern'
 import { SettingsStore } from './settingsStore'
 import { dataUrlToBuffer, saveCapture, saveToPath, uniquePath } from './saveImage'
 import { buildPdf } from './pdfBuilder'
+import { recognizeDataUrl } from './ocr'
 import { closeAllOverlays, closeOtherOverlays, getInitData, startCapture } from './overlay'
 import {
   clearReditContext,
@@ -120,6 +121,15 @@ export function registerIpcHandlers(ctx: IpcContext): void {
     } catch (err) {
       return { ok: false, error: err instanceof Error ? err.message : String(err) }
     }
+  })
+
+  // OCR (0012): lê o texto da imagem e o copia como texto. NÃO fecha o overlay: a pessoa
+  // segue editando. O texto nunca volta ao renderer nem é registrado em log — só a contagem.
+  ipcMain.handle('editor:ocr', async (_event, dataUrl: string) => {
+    const outcome = await recognizeDataUrl(typeof dataUrl === 'string' ? dataUrl : '')
+    if (!outcome.ok) return outcome
+    clipboard.writeText(outcome.text)
+    return { ok: true, chars: outcome.text.length, language: outcome.language }
   })
 
   // Diferente de `editor:copy`, NÃO fecha o overlay — o usuário segue anotando (RN-04).

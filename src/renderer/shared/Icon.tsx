@@ -83,6 +83,12 @@ const PATHS = {
       <rect x="7.5" y="8" width="9" height="8" rx="1" />
     </>
   ),
+  ocr: (
+    <>
+      <path d="M4 8V6a2 2 0 0 1 2-2h2M16 4h2a2 2 0 0 1 2 2v2M20 16v2a2 2 0 0 1-2 2h-2M8 20H6a2 2 0 0 1-2-2v-2" />
+      <path d="M8 10h8M8 14h5" />
+    </>
+  ),
   copy: (
     <>
       <rect x="8.5" y="8.5" width="11" height="11" rx="2" />
