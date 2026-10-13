@@ -41,6 +41,9 @@ npm run dist
 
 Na seleção de área, segure `Ctrl` para destacar a janela sob o mouse e clique para capturá-la inteira.
 
+Para pegar o **texto** de um print, use o botão de OCR do editor (ou `Ctrl+Shift+C`): ele lê a
+área selecionada com o reconhecimento de texto do próprio Windows, 100% offline, e copia como texto.
+
 No editor: `Ctrl+C` copia, `Ctrl+S` salva, `Ctrl+Shift+S` salvar como, `Ctrl+Z`/`Ctrl+Y`
 desfaz/refaz, `Esc` cancela.
 

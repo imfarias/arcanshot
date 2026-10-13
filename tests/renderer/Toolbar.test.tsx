@@ -175,4 +175,27 @@ describe('Toolbar — feature 0008 (CT-TB-10 a CT-TB-16)', () => {
     const { container } = render(<Toolbar {...makeProps({ showBeautify: true })} />)
     expect(await axe(container)).toHaveNoViolations()
   })
+
+  it('CT-TB-20: o botão de OCR emite onOcr e tem nome acessível (0012)', async () => {
+    const props = makeProps({ onOcr: vi.fn() })
+    render(<Toolbar {...props} />)
+
+    const button = screen.getByRole('button', { name: /texto da imagem \(OCR\)/i })
+    expect(button).toBe(screen.getByTestId('editor-ocr'))
+    await userEvent.setup().click(button)
+    expect(props.onOcr).toHaveBeenCalledTimes(1)
+  })
+
+  it('CT-TB-21: o botão de OCR fica desabilitado enquanto lê e some sem o callback (0012)', () => {
+    const { rerender } = render(<Toolbar {...makeProps({ onOcr: vi.fn(), ocrBusy: true })} />)
+    expect(screen.getByTestId('editor-ocr')).toBeDisabled()
+
+    rerender(<Toolbar {...makeProps()} />)
+    expect(screen.queryByTestId('editor-ocr')).not.toBeInTheDocument()
+  })
+
+  it('CT-TB-22: sem violações de acessibilidade com o botão de OCR (0012)', async () => {
+    const { container } = render(<Toolbar {...makeProps({ onOcr: vi.fn() })} />)
+    expect(await axe(container)).toHaveNoViolations()
+  })
 })

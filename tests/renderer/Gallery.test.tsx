@@ -30,6 +30,7 @@ function mockGalleryApi(overrides: Partial<ArcanshotApi> = {}): void {
     copyColor: vi.fn(),
     saveImage: vi.fn(),
     saveImageAs: vi.fn(),
+    ocrImage: vi.fn(),
     getVersion: vi.fn(),
     galleryInit: vi.fn().mockResolvedValue(makeGalleryData(3)),
     gallerySaveAll: vi.fn().mockResolvedValue({ ok: true, folder: 'C:\\Prints' }),

@@ -185,6 +185,11 @@ body,
   cursor: not-allowed;
 }
 
+.action-btn:disabled {
+  opacity: 0.45;
+  cursor: wait;
+}
+
 .action-btn.cancel:hover {
   background: #b91c1c;
 }
