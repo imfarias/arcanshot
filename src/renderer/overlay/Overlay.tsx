@@ -7,6 +7,7 @@ import {
   clampRectToBounds,
   dipRectToOverlayCss,
   displayDestRect,
+  findViewportFor,
   normalizeRect,
   pickCompositeScale,
   placeToolbar,
@@ -14,6 +15,8 @@ import {
   rectIsMinSize,
   unionRect
 } from '@shared/geometry'
+import { pickWindowAt, toImageWindows } from '@shared/windowPick'
+import type { ImageWindow } from '@shared/windowPick'
 import {
   EditorState,
   addAnnotation,
@@ -87,6 +90,9 @@ export function Overlay(): ReactNode {
   const [beautify, setBeautify] = useState<BeautifyOptions | null>(null)
   const [beautifyOpen, setBeautifyOpen] = useState(false)
   const [toolbarSize, setToolbarSize] = useState(TOOLBAR_FALLBACK_SIZE_CSS)
+  /** Janelas abertas em px de imagem, de cima para baixo (0011). Vazio = recurso indisponível. */
+  const [windowsImg, setWindowsImg] = useState<ImageWindow[]>([])
+  const [ctrlHeld, setCtrlHeld] = useState(false)
 
   const baseCanvasRef = useRef<HTMLCanvasElement | null>(null)
   const canvasRef = useRef<HTMLCanvasElement>(null)
@@ -98,6 +104,10 @@ export function Overlay(): ReactNode {
   const viewportsCssRef = useRef<Rect[]>([])
   const toolbarWrapperRef = useRef<HTMLDivElement>(null)
   const beautifySaveTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // 0011: com Ctrl pressionado na fase de seleção, a janela sob o cursor fica em destaque.
+  const hoverWin =
+    phase === 'select' && ctrlHeld && cursorImg ? pickWindowAt(windowsImg, cursorImg) : null
 
   const cssPerImage = cssPerImageRef.current
   const pxScale = 1 / cssPerImage
@@ -171,6 +181,12 @@ export function Overlay(): ReactNode {
       }
 
       baseCanvasRef.current = base
+      if (data.windows && data.windows.length > 0) {
+        // Escala medida na própria imagem (e não scaleFactor): vale em DPI misto e com a
+        // captura reescalada. A origem é a união dos monitores, canto do desktop na imagem.
+        const union = unionRect(data.displays.map((d) => d.bounds))
+        setWindowsImg(toImageWindows(data.windows, union, base.width / union.width))
+      }
       setBeautify(beautifyFromSettings(data.settings))
       setInit(data)
       if (data.mode === 'area') {
@@ -202,26 +218,34 @@ export function Overlay(): ReactNode {
       const annotations = draft ? [...editor.annotations, draft] : editor.annotations
       renderAnnotations(ctx, base, annotations)
 
-      // véu fora da seleção (o mesmo tom quase preto do site, DESIGN.md)
+      // véu fora da área em foco (o mesmo tom quase preto do site, DESIGN.md): a seleção
+      // ou, com Ctrl pressionado na seleção, a janela sob o mouse (0011).
       ctx.save()
       ctx.fillStyle = 'rgba(9, 9, 12, 0.55)'
-      if (!selection) {
+      const lit: Rect | null = selection ?? hoverWin
+      if (!lit) {
         ctx.fillRect(0, 0, canvas.width, canvas.height)
       } else {
-        const s = selection
+        const s = lit
         ctx.fillRect(0, 0, canvas.width, s.y)
         ctx.fillRect(0, s.y, s.x, s.height)
         ctx.fillRect(s.x + s.width, s.y, canvas.width - s.x - s.width, s.height)
         ctx.fillRect(0, s.y + s.height, canvas.width, canvas.height - s.y - s.height)
-        ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)'
-        ctx.lineWidth = Math.max(1, 1.5 * pxScale)
-        ctx.setLineDash([6 * pxScale, 4 * pxScale])
+        if (selection) {
+          ctx.strokeStyle = 'rgba(255, 255, 255, 0.92)'
+          ctx.lineWidth = Math.max(1, 1.5 * pxScale)
+          ctx.setLineDash([6 * pxScale, 4 * pxScale])
+        } else {
+          // janela candidata: contorno azul cheio (o tracejado branco significa "selecionado")
+          ctx.strokeStyle = '#2563eb'
+          ctx.lineWidth = Math.max(2, 3 * pxScale)
+        }
         ctx.strokeRect(s.x, s.y, s.width, s.height)
       }
       ctx.restore()
     })
     return () => cancelAnimationFrame(frame)
-  }, [phase, selection, editor, draft, pxScale])
+  }, [phase, selection, hoverWin, editor, draft, pxScale])
 
   // ---------- ações ----------
   const getDataUrl = useCallback((): string | null => {
@@ -371,6 +395,20 @@ export function Overlay(): ReactNode {
     return () => observer.disconnect()
   }, [phase, beautifyOpen])
 
+  // ---------- Ctrl (captura de janela, 0011) ----------
+  useEffect(() => {
+    const sync = (e: KeyboardEvent): void => setCtrlHeld(e.ctrlKey)
+    const release = (): void => setCtrlHeld(false)
+    window.addEventListener('keydown', sync)
+    window.addEventListener('keyup', sync)
+    window.addEventListener('blur', release)
+    return () => {
+      window.removeEventListener('keydown', sync)
+      window.removeEventListener('keyup', sync)
+      window.removeEventListener('blur', release)
+    }
+  }, [])
+
   // ---------- teclado ----------
   useEffect(() => {
     function onKeyDown(e: KeyboardEvent): void {
@@ -422,6 +460,15 @@ export function Overlay(): ReactNode {
     const p = toImg(e)
 
     if (phase === 'select') {
+      // 0011: Ctrl+clique numa janela seleciona o retângulo dela e já abre a edição.
+      const win = e.ctrlKey ? pickWindowAt(windowsImg, p) : null
+      if (win) {
+        const { x, y, width, height } = win
+        setSelection(clampRectToBounds({ x, y, width, height }, canvasBounds()))
+        setPhase('edit')
+        void window.arcanshot.beginEdit()
+        return
+      }
       dragRef.current = { type: 'create-selection', start: p }
       return
     }
@@ -453,6 +500,7 @@ export function Overlay(): ReactNode {
   }
 
   function onPointerMove(e: ReactPointerEvent): void {
+    setCtrlHeld(e.ctrlKey)
     const p = toImg(e)
     // RN-01: a lupa precisa da posição mesmo sem arrasto. `cursorImg` não entra nas
     // dependências do efeito de desenho, então o canvas principal não redesenha aqui.
@@ -590,12 +638,27 @@ export function Overlay(): ReactNode {
     TOOLBAR_GAP_CSS
   )
 
+  // Dica de Ctrl+clique: topo e centro do monitor onde está o cursor (ou o primeiro).
+  const hintViewport = (() => {
+    const viewports = viewportsCssRef.current
+    if (cursorImg === null || viewports.length === 0) return viewports[0]
+    return findViewportFor(
+      { x: cursorImg.x * cssPerImage, y: cursorImg.y * cssPerImage, width: 1, height: 1 },
+      viewports
+    )
+  })()
+  const hintPos = hintViewport
+    ? { x: hintViewport.x + hintViewport.width / 2, y: hintViewport.y + 24 }
+    : { x: window.innerWidth / 2, y: 24 }
+
   const cursorClass =
     phase === 'select' || (phase === 'edit' && tool !== 'select') ? 'crosshair' : 'default'
 
   // RN-01: durante a seleção sempre; em edição, só com o conta-gotas ativo.
+  // (a lupa sai de cena enquanto uma janela está em destaque: ela cobriria o que se quer ver)
   const showMagnifier =
     cursorImg !== null &&
+    hoverWin === null &&
     baseCanvasRef.current !== null &&
     (phase === 'select' || (phase === 'edit' && tool === 'eyedropper'))
 
@@ -633,6 +696,35 @@ export function Overlay(): ReactNode {
           }}
         >
           {Math.round(selection!.width)} × {Math.round(selection!.height)}
+        </div>
+      )}
+
+      {hoverWin && (
+        <div
+          className="size-label window-label"
+          data-testid="editor-window-label"
+          style={{
+            left: hoverWin.x * cssPerImage,
+            top:
+              hoverWin.y * cssPerImage > 36
+                ? hoverWin.y * cssPerImage - 31
+                : hoverWin.y * cssPerImage + 8
+          }}
+        >
+          <span className="window-label-title">{hoverWin.title}</span>
+          {' · '}
+          {hoverWin.width} × {hoverWin.height}
+        </div>
+      )}
+
+      {phase === 'select' && !selection && !ctrlHeld && windowsImg.length > 0 && (
+        <div
+          className="overlay-hint"
+          role="note"
+          data-testid="editor-window-hint"
+          style={{ left: hintPos.x, top: hintPos.y }}
+        >
+          Segure <kbd>Ctrl</kbd> e clique numa janela para capturá-la inteira
         </div>
       )}
 

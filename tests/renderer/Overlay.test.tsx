@@ -5,7 +5,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { axe } from 'jest-axe'
-import type { DisplayCapture, OverlayInitData } from '@shared/types'
+import type { DisplayCapture, OverlayInitData, WindowInfo } from '@shared/types'
 import { Overlay } from '../../src/renderer/overlay/Overlay'
 import { settingsFactory } from '../factories/settingsFactory'
 import { displayCaptureFactory } from '../factories/displayCaptureFactory'
@@ -676,5 +676,160 @@ describe('Overlay — embelezar', () => {
     expect(api.copyImage).toHaveBeenCalledTimes(1)
     // sem acabamento ⇒ sem recorte de cantos arredondados
     expect(ctxCalls.some((c) => c.method === 'clip')).toBe(false)
+  })
+})
+
+// ---------------------------------------------------------------------------
+// 0011 — captura de janela por Ctrl+clique
+// ---------------------------------------------------------------------------
+
+describe('Overlay — captura de janela por Ctrl+clique (0011)', () => {
+  /** Dois monitores 1920×1080 lado a lado (união 3840×1080, escala 1) + janelas em DIP. */
+  function windowsInit(windows = defaultWindows()): OverlayInitData {
+    return { ...dualAreaInit().data, windows }
+  }
+  function defaultWindows(): WindowInfo[] {
+    return [
+      { x: 1000, y: 100, width: 800, height: 600, title: 'Planilha — Excel' },
+      { x: 0, y: 0, width: 3000, height: 1000, title: 'Área grande' }
+    ]
+  }
+  // overlay de 1024 CSS px para 3840 px de imagem: 1 CSS px = 3,75 px de imagem
+  const IN_SHEET = { x: 400, y: 100 } // imagem (1500, 375): dentro das duas janelas
+  const ONLY_BIG = { x: 100, y: 100 } // imagem (375, 375): só na janela grande
+  const OUTSIDE = { x: 933, y: 240 } // imagem (3500, 900): fora de todas
+
+  function ctrlDown(): void {
+    fireEvent.keyDown(window, { key: 'Control', ctrlKey: true })
+  }
+  function hover(p: { x: number; y: number }, ctrlKey = true): void {
+    fireEvent.pointerMove(screen.getByTestId('editor-overlay'), {
+      clientX: p.x,
+      clientY: p.y,
+      ctrlKey
+    })
+  }
+
+  it('CT-FC-60: com janelas disponíveis, a dica de Ctrl+clique aparece na seleção', async () => {
+    await renderOverlay(windowsInit())
+    expect(screen.getByTestId('editor-window-hint')).toHaveTextContent(/Ctrl/)
+  })
+
+  it('CT-FC-60b: sem lista de janelas não há dica nem destaque', async () => {
+    const { data } = dualAreaInit()
+    await renderOverlay(data)
+    expect(screen.queryByTestId('editor-window-hint')).not.toBeInTheDocument()
+
+    ctrlDown()
+    hover(IN_SHEET)
+    expect(screen.queryByTestId('editor-window-label')).not.toBeInTheDocument()
+  })
+
+  it('CT-FC-61: Ctrl+clique numa janela seleciona o retângulo dela e abre a edição', async () => {
+    const { api } = await renderOverlay(windowsInit())
+
+    fireEvent.pointerDown(screen.getByTestId('editor-overlay'), {
+      clientX: IN_SHEET.x,
+      clientY: IN_SHEET.y,
+      ctrlKey: true
+    })
+
+    expect(await screen.findByRole('toolbar')).toBeInTheDocument()
+    expect(api.beginEdit).toHaveBeenCalledTimes(1)
+    expect(screen.getByTestId('editor-size-badge').textContent).toBe('800 × 600')
+  })
+
+  it('CT-FC-61b: vale a janela de cima quando duas se sobrepõem', async () => {
+    await renderOverlay(windowsInit())
+    ctrlDown()
+    hover(IN_SHEET)
+    expect(screen.getByTestId('editor-window-label')).toHaveTextContent('Planilha — Excel')
+
+    hover(ONLY_BIG)
+    expect(screen.getByTestId('editor-window-label')).toHaveTextContent('Área grande')
+  })
+
+  it('CT-FC-62: com Ctrl, a janela sob o mouse mostra título e medida e a lupa sai de cena', async () => {
+    await renderOverlay(windowsInit())
+    expect(screen.queryByTestId('editor-window-label')).not.toBeInTheDocument()
+
+    ctrlDown()
+    hover(IN_SHEET)
+
+    const label = await screen.findByTestId('editor-window-label')
+    expect(label).toHaveTextContent('Planilha — Excel')
+    expect(label).toHaveTextContent('800 × 600')
+    expect(screen.queryByTestId('editor-magnifier')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('editor-window-hint')).not.toBeInTheDocument()
+  })
+
+  it('CT-FC-62b: o contorno da janela é desenhado no canvas e some ao soltar o Ctrl', async () => {
+    await renderOverlay(windowsInit())
+    ctrlDown()
+    hover(IN_SHEET)
+
+    await waitFor(() => {
+      const rects = ctxCalls.filter((c) => c.method === 'strokeRect')
+      expect(rects.at(-1)?.args).toEqual([1000, 100, 800, 600])
+    })
+
+    fireEvent.keyUp(window, { key: 'Control', ctrlKey: false })
+    await waitFor(() =>
+      expect(screen.queryByTestId('editor-window-label')).not.toBeInTheDocument()
+    )
+  })
+
+  it('CT-FC-62c: sem Ctrl nada é destacado, mesmo sobre uma janela', async () => {
+    await renderOverlay(windowsInit())
+    hover(IN_SHEET, false)
+    expect(screen.queryByTestId('editor-window-label')).not.toBeInTheDocument()
+  })
+
+  it('CT-FC-63: sem Ctrl, o arrasto de área continua igual (a janela é ignorada)', async () => {
+    const { api } = await renderOverlay(windowsInit())
+
+    drag({ x: 100, y: 50 }, { x: 300, y: 250 })
+
+    expect((await screen.findByTestId('editor-size-badge')).textContent).toBe('750 × 750')
+    expect(api.beginEdit).toHaveBeenCalledTimes(1)
+  })
+
+  it('CT-FC-64: Ctrl+clique fora de qualquer janela cai no arrasto normal', async () => {
+    const { api } = await renderOverlay(windowsInit())
+    const root = screen.getByTestId('editor-overlay')
+
+    // clique sem arrasto: nada é selecionado
+    fireEvent.pointerDown(root, { clientX: OUTSIDE.x, clientY: OUTSIDE.y, ctrlKey: true })
+    fireEvent.pointerUp(root, { clientX: OUTSIDE.x, clientY: OUTSIDE.y, ctrlKey: true })
+    expect(api.beginEdit).not.toHaveBeenCalled()
+
+    // com arrasto, seleciona a área desenhada
+    fireEvent.pointerDown(root, { clientX: 700, clientY: 100, ctrlKey: true })
+    fireEvent.pointerMove(root, { clientX: 900, clientY: 250, ctrlKey: true })
+    fireEvent.pointerUp(root, { clientX: 900, clientY: 250, ctrlKey: true })
+    expect(await screen.findByRole('toolbar')).toBeInTheDocument()
+    expect(api.beginEdit).toHaveBeenCalledTimes(1)
+  })
+
+  it('CT-FC-65: a janela que passa da borda da imagem é recortada ao que está visível', async () => {
+    await renderOverlay(
+      windowsInit([{ x: 3700, y: 900, width: 400, height: 300, title: 'Meio fora' }])
+    )
+
+    fireEvent.pointerDown(screen.getByTestId('editor-overlay'), {
+      clientX: 1000,
+      clientY: 253,
+      ctrlKey: true
+    })
+
+    expect((await screen.findByTestId('editor-size-badge')).textContent).toBe('140 × 180')
+  })
+
+  it('CT-FC-66: sem violações de acessibilidade com a dica e o destaque (axe)', async () => {
+    const { container } = await renderOverlay(windowsInit())
+    ctrlDown()
+    hover(IN_SHEET)
+    await screen.findByTestId('editor-window-label')
+    expect(await axe(container)).toHaveNoViolations()
   })
 })

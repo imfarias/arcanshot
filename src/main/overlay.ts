@@ -1,9 +1,17 @@
 import { BrowserWindow, screen } from 'electron'
 import { join } from 'node:path'
-import type { AppSettings, CaptureMode, DisplayInfo, OverlayInitData } from '@shared/types'
+import type {
+  AppSettings,
+  CaptureMode,
+  DisplayInfo,
+  OverlayInitData,
+  WindowInfo
+} from '@shared/types'
+import { selectCaptureWindows } from '@shared/windowPick'
 import { captureAllDisplays } from './capture'
 import type { DisplayCacheStore } from './displayCacheStore'
 import { pickCapturesForWindow, planOverlayWindows } from './overlayLayout'
+import { listWindows } from './windowList'
 
 const overlayWindows = new Set<BrowserWindow>()
 const initDataByWebContents = new Map<number, OverlayInitData>()
@@ -118,6 +126,25 @@ function getAllDisplayInfos(): DisplayInfo[] {
   }))
 }
 
+/**
+ * Janelas abertas que o Ctrl+clique pode capturar (0011), em DIP do desktop, de cima para baixo.
+ * Roda ANTES de criar os overlays: assim nenhuma janela do ArcanShot entra na lista e a ordem
+ * de empilhamento é a mesma da imagem congelada. Qualquer falha devolve [] (recurso desligado).
+ */
+function collectWindows(displays: DisplayInfo[]): WindowInfo[] {
+  try {
+    const raw = listWindows()
+    if (raw.length === 0) return []
+    const screens = displays.map((d) => screen.dipToScreenRect(null, d.bounds))
+    return selectCaptureWindows(raw, { excludeHandles: new Set(), screens }).map((w) => {
+      const dip = screen.screenToDipRect(null, w.rect)
+      return { x: dip.x, y: dip.y, width: dip.width, height: dip.height, title: w.title }
+    })
+  } catch {
+    return []
+  }
+}
+
 export async function startCapture(mode: CaptureMode, settings: AppSettings): Promise<void> {
   if (isCapturing()) return
 
@@ -126,6 +153,7 @@ export async function startCapture(mode: CaptureMode, settings: AppSettings): Pr
   // mas captureAllDisplays() sempre usa screen.getAllDisplays() internamente para garantir
   // conteúdo visual correto.
   const displayInfos: DisplayInfo[] = _cacheStore?.load() ?? getAllDisplayInfos()
+  const windows = mode === 'area' ? collectWindows(displayInfos) : undefined
 
   type WinEntry = { win: BrowserWindow; readyPromise: Promise<void>; displayId: number | null }
 
@@ -162,7 +190,8 @@ export async function startCapture(mode: CaptureMode, settings: AppSettings): Pr
       const initData: OverlayInitData = {
         mode,
         displays: pickCapturesForWindow(captures, displayId),
-        settings
+        settings,
+        ...(windows && windows.length > 0 ? { windows } : {})
       }
       initDataByWebContents.set(win.webContents.id, initData)
     }

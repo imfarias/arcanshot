@@ -25,6 +25,8 @@
 | settings | `src/shared/settings.ts` | Defaults, merge tolerante e validação de AppSettings | `defaultSettings/mergeSettings/validateSettings` |
 | beautify (puro) | `src/shared/beautify.ts` | Presets de fundo, geometria proporcional do acabamento e regra de formato | `BACKGROUND_PRESETS/computeBeautifyLayout/pickExportFormat/validateBeautify/beautifyFromSettings` |
 | beautify (canvas) | `src/renderer/overlay/lib/beautify.ts` | Aplica fundo, sombra e cantos arredondados sobre um recorte | `applyBeautify(canvas, opts)` / `roundRectPath(ctx, ...)` |
+| windowPick | `src/shared/windowPick.ts` | Captura de janela por Ctrl+clique (0011), puro: filtra janelas que valem como alvo, hit-test e conversão DIP → px da imagem | `selectCaptureWindows(raw, { excludeHandles, screens })` / `pickWindowAt(windows, p)` / `toImageWindows(windows, origin, scale)` |
+| windowList | `src/main/windowList.ts` | Janelas abertas via user32/dwmapi com koffi; carga preguiçosa, nunca lança, vazio fora do Windows | `listWindows(): RawWindow[]` (px físicos, de cima para baixo) |
 | editor (modelo) | `src/renderer/overlay/lib/editor.ts` | Estado de anotações com undo/redo, render (inclui traço livre e tarja) e export com acabamento opcional | `createEditorState/addAnnotation/undo/redo/drawFreehand/exportSelection` |
 | pdfBuilder | `src/main/pdfBuilder.ts` | PDF da sequência (uma página por captura), com páginas padronizadas opcionais e sobra pintada com o fundo do embelezar de cada imagem (0010); sem Electron | `planPdfPages(sizes, uniform)` / `buildPdf(inputs: (string \| { dataUrl, background? })[], { uniformSize })` |
 
