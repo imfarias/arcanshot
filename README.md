@@ -39,6 +39,8 @@ npm run dist
 | Capturar tela atual | `Ctrl+PrintScreen` |
 | Capturar todos os monitores | `Shift+PrintScreen` |
 
+Na seleção de área, segure `Ctrl` para destacar a janela sob o mouse e clique para capturá-la inteira.
+
 No editor: `Ctrl+C` copia, `Ctrl+S` salva, `Ctrl+Shift+S` salvar como, `Ctrl+Z`/`Ctrl+Y`
 desfaz/refaz, `Esc` cancela.
 

@@ -56,10 +56,17 @@ export interface DisplayCapture {
   dataUrl: string
 }
 
+/** Janela aberta que dá para capturar por Ctrl+clique (0011). Retângulo em DIP do desktop. */
+export interface WindowInfo extends Rect {
+  title: string
+}
+
 export interface OverlayInitData {
   mode: CaptureMode
   displays: DisplayCapture[]
   settings: AppSettings
+  /** Janelas abertas, de cima para baixo. Só no modo `area`; ausente se a lista não estiver disponível. */
+  windows?: WindowInfo[]
 }
 
 export interface GalleryItem {

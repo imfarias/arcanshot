@@ -44,6 +44,46 @@ body,
   z-index: 10;
 }
 
+/* janela candidata do Ctrl+clique (0011): título e medida acima do contorno azul */
+.window-label {
+  position: absolute;
+  z-index: 10;
+  max-width: min(460px, 70vw);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  background: var(--select);
+}
+
+.window-label-title {
+  font-family: var(--font-body);
+  font-weight: 600;
+}
+
+/* dica de Ctrl+clique no topo do monitor */
+.overlay-hint {
+  position: absolute;
+  z-index: 15;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border: 1px solid var(--chrome-line);
+  border-radius: 10px;
+  background: rgba(24, 24, 27, 0.92);
+  color: var(--chrome-text);
+  font: 500 13px/1.3 var(--font-body);
+  white-space: nowrap;
+  pointer-events: none;
+  box-shadow: var(--bar-shadow);
+}
+
+.overlay-hint kbd {
+  padding: 2px 6px;
+  border-radius: 5px;
+  background: var(--paper-white);
+  box-shadow: inset 0 -2px 0 var(--key-line);
+  color: var(--ink);
+  font: 600 12px/1 var(--font-mono);
+}
+
 /* alças da moldura de seleção: quadrado branco com borda azul */
 .handle {
   position: absolute;

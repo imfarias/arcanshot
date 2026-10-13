@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "electron-updater": "6.8.9",
+    "koffi": "^3.3.3",
     "pdf-lib": "^1.17.1"
   }
 }
